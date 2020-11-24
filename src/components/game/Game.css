@@ -1,0 +1,232 @@
+/* Game */
+.Game {
+	height: 100vh;
+	/*background-color: #064588;*/
+	background-color: #222;
+}
+.Game button {
+	margin: 4px 8px 4px 0;
+	background-color: teal;
+	color: #fff;
+	padding: 12px 20px;
+	border: none;
+	outline: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 1.15em;
+}
+.Game a.home-link {
+	color: #fff;
+	font-size: 1.75em;
+	font-weight: bold;
+}
+.Game a:hover {
+	text-decoration: none;
+}
+
+/* Default Hex Colors */
+.Game .HexCell {
+	fill: rgb(146, 146, 146);
+}
+
+/* Unplayed unit animation */
+.Game svg image.movable-unit {
+	animation-name: moveMe;
+	animation-duration: 500ms;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+}
+
+/* Miscs */
+.Game .core {
+	height: 100%;
+}
+.clickable {
+	cursor: pointer;
+}
+.Game .Alert {
+	position: fixed;
+	top: 50px;
+	right: 450px;
+	line-height: 1.43;
+	padding: 12px 24px;
+	border-radius: 4px;
+	background-color: #f44336;
+	color: #fff;
+	z-index: 100;
+}
+
+/* Common menu */
+.Game .KingdomMenu .stats .gold h2 img {
+	width: 40px;
+	height: 40px;
+	margin-right: 16px;
+}
+.Game .KingdomMenu .stats {
+	display: flex;
+	flex-wrap: nowrap;
+}
+.Game .KingdomMenu .stats > div {
+	width: 50%;
+}
+.Game .KingdomMenu .stats h2 {
+	margin-top: 0;
+	text-align: center;
+}
+.Game .KingdomMenu .stats .selection .figure img {
+	width: 40px;
+	height: 40px;
+}
+.Game .KingdomMenu .store button {
+	display: inline-flex;
+	align-items: center;
+}
+.Game .KingdomMenu .store button img {
+	width: 40px;
+	height: 40px;
+	margin-right: 8px;
+}
+.Game .big-menu {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 10;
+	width: 400px;
+	background-color: #fff;
+	box-shadow: 0 0 4px rgba(21, 21, 21, 0.95), 0 0 16px rgba(0, 0, 0, 0.9);
+}
+.Game .big-menu .current-player-color {
+	width: 100%;
+	height: 70px;
+	display: flex;
+	align-items: center;
+	padding: 30px;
+}
+
+/* Kingdom Menu */
+.Game .big-menu .KingdomMenu {
+	padding: 30px;
+}
+.Game .big-menu .KingdomMenu .stats .gold h2 {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.Game .big-menu .KingdomMenu .stats .selection .figure {
+	display: flex;
+	justify-content: center;
+}
+.Game .big-menu .KingdomMenu .selection {
+	height: 50px;
+}
+
+/* Game Menu */
+.Game .big-menu .GameMenu .home {
+	display: none;
+}
+.Game .big-menu .GameMenu {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	padding: 30px;
+}
+
+/* Mobile menu top */
+.Game .small-menu-top {
+	padding: 5px 10px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	background-color: #fff;
+	display: none;
+	z-index: 100;
+	height: 67px;
+}
+.Game .small-menu-top .stats .gold p {
+	display: none;
+}
+.Game .small-menu-top .KingdomMenu {
+	display: flex;
+}
+.Game .small-menu-top .KingdomMenu > div {
+	white-space: nowrap;
+	width: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+.Game .small-menu-top .KingdomMenu h2 {
+	margin: 0;
+}
+.Game .small-menu-top .KingdomMenu .stats .gold h2 img {
+	display: none;
+}
+.Game .small-menu-top .KingdomMenu .store span {
+	display: none;
+}
+.Game .small-menu-top .KingdomMenu img {
+	width: 25px !important;
+	height: 25px !important;
+	margin: 0 !important;
+}
+.Game .small-menu-top .KingdomMenu .selection h2 {
+	display: none;
+}
+
+/* Mobile menu bottom */
+.Game .small-menu-bottom {
+	padding: 5px 10px;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: #fff;
+	display: none;
+	z-index: 100;
+	height: 67px;
+}
+.Game .small-menu-bottom .GameMenu {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.Game .small-menu-bottom .GameMenu .home {
+	color: #222;
+	font-weight: bold;
+	font-size: 2em;
+}
+.Game .small-menu-bottom h2 {
+	display: none;
+}
+
+@keyframes moveMe {
+	0% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-5px);
+	}
+	100% {
+		transform: translateY(0px);
+	}
+}
+
+@media only screen and (max-width: 600px) {
+	.Game .Alert {
+		top: calc(67px + 20px);
+		right: initial;
+		left: 20px;
+		margin-right: 20px;
+	}
+	.Game .big-menu {
+		display: none;
+	}
+	.Game .small-menu-top,
+	.Game .small-menu-bottom {
+		display: block;
+	}
+}

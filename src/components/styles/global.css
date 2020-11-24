@@ -1,0 +1,139 @@
+/* Global Rules */
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+	font-family: roboto, 'source sans pro', Arial, Helvetica, sans-serif;
+	letter-spacing: 0.01071em;
+}
+button,
+div[role='button'] {
+	cursor: pointer;
+	user-select: none;
+}
+button:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+a {
+	color: #2196f3;
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+.bg-color-0 {
+	background-color: #229b3e !important;
+}
+.bg-color-1 {
+	background-color: #c82333 !important;
+}
+.bg-color-2 {
+	background-color: #e0a800 !important;
+}
+.bg-color-3 {
+	background-color: #424242 !important;
+}
+.bg-color-4 {
+	background-color: #868e96 !important;
+}
+.bg-color-5 {
+	background-color: #0e66ac !important;
+}
+.fill-color-0 {
+	fill: #229b3e !important;
+}
+.fill-color-1 {
+	fill: #c82333 !important;
+}
+.fill-color-2 {
+	fill: #e0a800 !important;
+}
+.fill-color-3 {
+	fill: #424242 !important;
+}
+.fill-color-4 {
+	fill: #868e96 !important;
+}
+.fill-color-5 {
+	fill: #0e66ac !important;
+}
+.fill-color-white {
+	fill: #fff !important;
+}
+.fill-color-black {
+	fill: #222 !important;
+}
+.disabled {
+	opacity: 0.5;
+	cursor: default !important;
+}
+
+/* Literature Pages */
+.literature {
+	min-height: 100vh;
+	background-color: #111;
+	color: #fff;
+}
+
+.literature h1 {
+	font-size: 2.5em;
+}
+.literature h2 {
+	font-size: 2em;
+}
+.literature p,
+.literature ol,
+.literature ul {
+	font-size: 1.2em;
+}
+
+.literature ol,
+.literature ul {
+	list-style-position: inside;
+}
+
+.literature .maxWidth {
+	width: 95%;
+	max-width: 800px;
+	padding: 50px;
+	margin: auto;
+	position: relative;
+}
+
+.literature .maxWidth section {
+	margin-bottom: 56px;
+}
+
+.literature .backButton {
+	cursor: pointer;
+	position: fixed;
+	top: 50%;
+	left: 0;
+	background-color: transparent;
+	border: 25px solid transparent;
+	border-top-color: #fff;
+	transform: rotate(90deg) translateY(-50%);
+}
+
+.literature .backButtonStatic {
+	cursor: pointer;
+	background-color: transparent;
+	border: 25px solid transparent;
+	border-top-color: #fff;
+	display: none;
+	transform: translateX(-50%) rotate(90deg);
+}
+
+@media only screen and (max-width: 1024px) {
+	.literature .maxWidth {
+		padding: 50px 10px;
+	}
+	.literature .backButton {
+		display: none;
+	}
+	.literature .backButtonStatic {
+		display: inline-block;
+	}
+}

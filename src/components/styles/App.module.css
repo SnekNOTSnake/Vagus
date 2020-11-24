@@ -1,0 +1,25 @@
+/* App Home */
+.App {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+.App .menu {
+	display: flex;
+	justify-content: center;
+}
+
+.App .menu a:hover {
+	text-decoration: none;
+}
+
+.App .menu .menuHex {
+	cursor: pointer;
+}
+
+.App .menu .menuHex text {
+	font-size: 4px;
+}
