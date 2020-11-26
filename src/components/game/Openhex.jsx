@@ -4,6 +4,7 @@ import { HexGrid, Layout } from 'react-hexgrid'
 import HexUtils from '../../engine/HexUtils'
 import Arbiter from '../../engine/Arbiter'
 import HexCell from './HexCell'
+import KingdomDefense from './KingdomDefense'
 
 /**
  * @typedef {import('../../engine/Hex.js').default} Hex
@@ -76,8 +77,15 @@ const Openhex = (props) => {
 	const { arbiter, width, height, onUpdate, onHexClick, onArbiterError } = props
 
 	const [, update] = React.useState(null)
+	const [showKingdomDefense, setShowKingdomDefense] = React.useState(null)
 
 	const handleHexClick = (hex) => {
+		if (
+			(hex.hasTower() || hex.hasCapital()) &&
+			hex.kingdom === arbiter.currentKingdom
+		)
+			setShowKingdomDefense(hex.kingdom)
+
 		onHexClick()
 		try {
 			arbiter.smartAction(hex)
@@ -103,29 +111,26 @@ const Openhex = (props) => {
 					strokeLinecap="round"
 					strokeWidth="6"
 					stroke="#151515"
-					transform="translate(1.5 2.3)"
+					transform={
+						// Transform to make the hexs view more center
+						`translate(${HEX_PADDING + 2} ${HEX_PADDING + 3})`
+					}
 				>
 					{arbiter.world.hexs.map((hex) => (
-						<g
-							key={hex.hash}
-							transform={
-								// Transform to make the hexs view more center
-								`translate(${HEX_PADDING} ${HEX_PADDING})`
-							}
-						>
-							<HexCell hex={hex} />
+						<g key={hex.hash}>
+							<HexCell empty hex={hex} />
 						</g>
 					))}
 				</g>
-				<g className="all-hexs">
+				<g
+					className="all-hexs"
+					transform={
+						// Transform to make the hexs view more center
+						`translate(${HEX_PADDING} ${HEX_PADDING})`
+					}
+				>
 					{arbiter.world.hexs.map((hex) => (
-						<g
-							key={hex.hash}
-							transform={
-								// Transform to make the hexs view more center
-								`translate(${HEX_PADDING} ${HEX_PADDING})`
-							}
-						>
+						<g key={hex.hash}>
 							<HexCell
 								clickable={
 									hex.player === arbiter.currentPlayer &&
@@ -142,16 +147,17 @@ const Openhex = (props) => {
 						</g>
 					))}
 				</g>
+
 				<g
 					className="selected-kingdom-stroke"
 					transform={`translate(${HEX_PADDING} ${HEX_PADDING})`}
 					strokeLinecap="round"
-					strokeWidth="4"
+					strokeWidth="5"
 					stroke="white"
 				>
 					{arbiter.currentKingdom
 						? arbiter.currentKingdom.hexs.map((hex) => (
-								<HexCell key={hex.hash} hex={hex} />
+								<HexCell empty key={hex.hash} hex={hex} />
 						  ))
 						: ''}
 				</g>
@@ -163,11 +169,7 @@ const Openhex = (props) => {
 						? arbiter.currentKingdom.hexs.map((hex) => (
 								<HexCell
 									key={hex.hash}
-									clickable={
-										hex.player === arbiter.currentPlayer &&
-										hex.kingdom !== null &&
-										hex.kingdom !== arbiter.currentKingdom
-									}
+									clickable={hex.hasTower() || hex.hasCapital()}
 									movable={
 										hex.player === arbiter.currentPlayer &&
 										hex?.entity?.played === false
@@ -178,6 +180,17 @@ const Openhex = (props) => {
 						  ))
 						: ''}
 				</g>
+
+				{showKingdomDefense ? (
+					<KingdomDefense
+						setShowKingdomDefense={setShowKingdomDefense}
+						kingdom={showKingdomDefense}
+						world={arbiter.world}
+						layout={layout}
+					/>
+				) : (
+					''
+				)}
 			</Layout>
 		</HexGrid>
 	)

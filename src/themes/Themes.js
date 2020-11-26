@@ -11,6 +11,7 @@ import unit4 from './images/unit-4.svg'
 import capital from './images/capital.svg'
 import grave from './images/grave.svg'
 import tower from './images/tower.svg'
+import shield from './images/shield.svg'
 import wtf from './images/wtf.svg'
 import gold1 from './images/gold/gold-1.svg'
 import gold5 from './images/gold/gold-5.svg'
@@ -51,6 +52,18 @@ export default class Themes {
 			case entity instanceof Tower:
 				return tower
 
+			default:
+				return wtf
+		}
+	}
+
+	/**
+	 * @param {'shield'} name
+	 */
+	static getSpecialImageFor(name) {
+		switch (name) {
+			case 'shield':
+				return shield
 			default:
 				return wtf
 		}

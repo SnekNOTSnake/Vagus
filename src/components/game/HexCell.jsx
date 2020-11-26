@@ -32,10 +32,11 @@ const hexContent = (hex, movable) => {
 /**
  * @param {{ hex: Hex }} param
  */
-const HexCell = ({ hex, onClick, movable, clickable }) => {
+const HexCell = ({ hex, empty, onClick, movable, clickable }) => {
 	const classes = ['HexCell']
-	if (hex?.player?.color !== undefined)
+	if (hex?.player?.color !== undefined && !empty)
 		classes.push(`fill-color-${hex.player.color}`)
+	if (empty) classes.push('fill-color-shadow')
 	if (movable || clickable) classes.push('clickable')
 
 	const onClickHandler = (e) => {
@@ -50,22 +51,24 @@ const HexCell = ({ hex, onClick, movable, clickable }) => {
 			s={hex.s}
 			onClick={onClickHandler}
 		>
-			{hexContent(hex, movable)}
+			{empty ? '' : hexContent(hex, movable)}
 		</Hexagon>
 	)
 }
 
 HexCell.propTypes = {
 	hex: PropTypes.instanceOf(Hex).isRequired,
-	onClick: PropTypes.func,
+	empty: PropTypes.bool,
 	movable: PropTypes.bool,
 	clickable: PropTypes.bool,
+	onClick: PropTypes.func,
 }
 
 HexCell.defaultProps = {
 	onClick: () => null,
 	movable: false,
 	clickable: false,
+	empty: false,
 }
 
 export default HexCell

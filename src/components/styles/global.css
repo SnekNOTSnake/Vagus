@@ -65,6 +65,12 @@ a:hover {
 .fill-color-black {
 	fill: #222 !important;
 }
+.fill-color-shadow {
+	fill: #151515 !important;
+}
+.fill-color-transparent {
+	fill: rgba(0, 0, 0, 0) !important;
+}
 .disabled {
 	opacity: 0.5;
 	cursor: default !important;

@@ -203,6 +203,14 @@
 	display: none;
 }
 
+/* Kingdom Defense */
+.Game .KingdomDefense .shield {
+	transition: transform 0.5s ease-out;
+	animation-duration: 2s;
+	animation-timing-function: linear;
+	animation-fill-mode: forwards;
+}
+
 @keyframes moveMe {
 	0% {
 		transform: translateY(0px);
@@ -212,6 +220,21 @@
 	}
 	100% {
 		transform: translateY(0px);
+	}
+}
+
+@keyframes shieldFade {
+	0% {
+		opacity: 0;
+	}
+	20% {
+		opacity: 1;
+	}
+	85% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
 	}
 }
 

@@ -101,11 +101,16 @@ export default class WorldGenerator {
 		const world = new World(worldHexs, config)
 
 		this.setPlayerColors(config.players)
-		this.setRandomHexColor(world)
-		this.initKingdoms(world)
+		this.spawnKingdoms(world)
 		this.initCapitals(world)
 		this.initKingdomsGold(world)
 		TreeUtils.spawnInitialTrees(world)
+
+		/* this.setRandomHexColor(world)
+		this.initKingdoms(world)
+		this.initCapitals(world)
+		this.initKingdomsGold(world)
+		TreeUtils.spawnInitialTrees(world) */
 
 		return world
 	}
@@ -199,7 +204,7 @@ export default class WorldGenerator {
 		const { kingdoms } = world
 
 		kingdoms.forEach((kingdom) => {
-			kingdom.setGold(kingdom.getIncome() * 5)
+			kingdom.setGold(10)
 		})
 	}
 
@@ -225,6 +230,123 @@ export default class WorldGenerator {
 		this.initKingdomsGold(world)
 
 		return world
+	}
+
+	/**
+	 * @param {World} world
+	 */
+	static spawnKingdoms(world) {
+		const kingdomsQuantity = this.getKingdomQuantity(world)
+		// Spawns n-number of kingdoms for each players
+		for (let i = 0; i < kingdomsQuantity; i += 1) {
+			// Spawn a kingdom for each player in a good place
+			// Far from the other kingdoms
+			world.config.players.forEach((player) => {
+				const hex = this.getGoodHexPlaceForKingdom(world)
+				this.spawnKingdom(world, hex, player)
+			})
+		}
+	}
+
+	/**
+	 * @param {World} world
+	 * @param {Hex} hex
+	 * @param {Player} player
+	 *
+	 * @returns {Kingdom}
+	 */
+	static spawnKingdom(world, hex, player) {
+		const potentialKingdomHexs = [hex]
+
+		HexUtils.neighbourHexs(world, hex)
+			.slice(0, 4)
+			.forEach((neighbourHex) => potentialKingdomHexs.push(neighbourHex))
+
+		potentialKingdomHexs.forEach((potentialKingdomHex) => {
+			potentialKingdomHex.setPlayer(player)
+		})
+
+		const kingdom = new Kingdom(potentialKingdomHexs)
+		world.kingdoms.push(kingdom)
+
+		potentialKingdomHexs.forEach((potentialKingdomHex) => {
+			potentialKingdomHex.setKingdom(kingdom)
+		})
+
+		return kingdom
+	}
+
+	/**
+	 * @param {World} world
+	 */
+	static getKingdomQuantity(world) {
+		switch (true) {
+			case world.config.size >= 56:
+				return 4
+
+			case world.config.size >= 40:
+				return 3
+
+			case world.config.size >= 24:
+				return 2
+
+			default:
+				return 1
+		}
+	}
+
+	/**
+	 * @param {World} world
+	 *
+	 * @returns {Hex}
+	 */
+	static getGoodHexPlaceForKingdom(world) {
+		// If every hexs are not yet colonized, get random hex
+		if (world.hexs.every((hex) => hex.player === null))
+			return this.getRandomHex(world)
+
+		const examined = []
+		const hexsBySteps = { 0: [] }
+		world.hexs
+			.filter((hex) => hex.player !== null)
+			.forEach((hex) => {
+				hexsBySteps[0].push(hex)
+				examined.push(hex)
+			})
+
+		let step = 0
+		let expanded = true
+		while (expanded) {
+			expanded = false
+
+			// Get the neighbours
+			const passedNeighbours = HexUtils.getHexsAdjacentToHexs(hexsBySteps[step])
+				.map((hex) => world.getHexAt(hex))
+				.filter((hex) => hex !== undefined)
+				.filter((hex) => !examined.includes(hex))
+
+			// Store the neighbours for the next loop
+			if (passedNeighbours.length) hexsBySteps[step + 1] = []
+			for (let i = 0; i < passedNeighbours.length; i += 1) {
+				hexsBySteps[step + 1].push(passedNeighbours[i])
+				examined.push(passedNeighbours[i])
+				expanded = true
+			}
+
+			step += 1
+		}
+
+		return hexsBySteps[step - 1][0]
+	}
+
+	/**
+	 * @param {World} world
+	 *
+	 * @returns {Hex}
+	 */
+	static getRandomHex(world) {
+		const randomIndex = Math.floor(Math.random() * world.hexs.length)
+		return world.hexs[randomIndex]
 	}
 
 	/**
