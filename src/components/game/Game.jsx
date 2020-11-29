@@ -4,11 +4,14 @@ import PropTypes from 'prop-types'
 import { UncontrolledReactSVGPanZoom } from 'react-svg-pan-zoom'
 import { AutoSizer } from 'react-virtualized'
 import querystring from 'query-string'
+import { buyTower, buyUnit } from '../hooks/hookUtils'
 import Openhex from './Openhex'
 import Arbiter from '../../engine/Arbiter'
 import HumanPlayer from '../../engine/HumanPlayer'
 import AIPlayer from '../../engine/AIPlayer'
 import WorldGenerator from '../../engine/WorldGenerator'
+import Unit from '../../engine/Unit'
+import Tower from '../../engine/Tower'
 import Alert from './Alert'
 import Menu from './Menu'
 import './Game.css'
@@ -37,8 +40,12 @@ const getHeight = (width, height) => {
 
 const Game = ({ routerProps }) => {
 	const [error, setError] = React.useState(null)
-	const [arbiter, setArbiter] = React.useState(null)
 	const [, update] = React.useState(null)
+
+	const [currentKingdom, setCurrentKingdom] = React.useState(null)
+	// Selection could be Hex or an Entity (bought unit or tower)
+	const [selection, setSelection] = React.useState(null)
+
 	const svgPanZoom = React.useRef(null)
 
 	// Force update
@@ -50,16 +57,14 @@ const Game = ({ routerProps }) => {
 		console.error(err)
 		setError(err)
 	}
-	const handleCleanError = () => {
-		setError(null)
-	}
 
 	// World Generation
-	React.useEffect(() => {
+	const arbiter = React.useMemo(() => {
 		const parsed = querystring.parse(routerProps.location.search)
 		const config = {
 			size: getWorldSize(parsed.world),
 		}
+
 		if (parsed?.players?.length >= 2 && parsed?.players?.length <= 6) {
 			const players = parsed.players.map((type) =>
 				type === 'human' ? new HumanPlayer() : new AIPlayer(),
@@ -71,10 +76,57 @@ const Game = ({ routerProps }) => {
 			parsed.seed ? parsed.seed : null,
 			config,
 		)
-		const arb = new Arbiter(world)
 
-		setArbiter(arb)
+		return new Arbiter(world)
 	}, [routerProps.location.search])
+
+	// Hex click handler
+	const handleHexClick = (hex) => {
+		setError(null)
+
+		try {
+			if (selection === null) {
+				if (hex.kingdom) {
+					if (hex.kingdom === currentKingdom) {
+						if (hex.hasUnit() && hex.entity.played === false) setSelection(hex)
+					} else if (hex.kingdom.player === arbiter.currentPlayer) {
+						setCurrentKingdom(hex.kingdom)
+						if (hex.hasUnit() && hex.entity.played === false) setSelection(hex)
+					}
+				}
+			} else {
+				// If selecting and moving to the same hex
+				if (hex === selection) {
+					setSelection(null)
+					return
+				}
+
+				if (
+					hex.player === arbiter.currentPlayer &&
+					hex.kingdom !== currentKingdom
+				)
+					throw new Error(
+						'Trying to select another kingdom but selection is not empty',
+					)
+
+				if (selection instanceof Unit) {
+					arbiter.buyUnitTowardsHex(hex, currentKingdom, selection.level)
+					setSelection(null)
+					return
+				}
+				if (selection instanceof Tower) {
+					arbiter.buyTowerForHex(hex)
+					setSelection(null)
+					return
+				}
+
+				arbiter.moveUnit(selection, hex)
+				setSelection(null)
+			}
+		} catch (err) {
+			setSelection(null)
+		}
+	}
 
 	// Shortcuts
 	React.useEffect(() => {
@@ -85,17 +137,24 @@ const Game = ({ routerProps }) => {
 					case 'KeyE':
 						if (arbiter.hasUndo()) arbiter.undo()
 						break
-					case 'KeyR':
-						if (!arbiter.winner && !arbiter.selection) arbiter.endTurn()
+
+					case 'KeyF':
+						if (!arbiter.winner && !selection) {
+							arbiter.endTurn()
+							setCurrentKingdom(null)
+						}
 						break
+
 					case 'KeyA':
-						if (arbiter.currentKingdom?.gold >= Arbiter.UNIT_PRICE)
-							arbiter.buyUnit()
+						if (currentKingdom?.gold >= Arbiter.UNIT_PRICE)
+							buyUnit(setSelection)
 						break
+
 					case 'KeyS':
-						if (arbiter.currentKingdom?.gold >= Arbiter.TOWER_PRICE)
-							arbiter.buyTower()
+						if (currentKingdom?.gold >= Arbiter.TOWER_PRICE)
+							buyTower(setSelection)
 						break
+
 					default:
 						break
 				}
@@ -108,12 +167,16 @@ const Game = ({ routerProps }) => {
 		return () => {
 			document.removeEventListener('keydown', keyDownHandler)
 		}
-	}, [arbiter])
+	}, [arbiter, currentKingdom?.gold, selection])
 
 	return arbiter !== null ? (
 		<div className="Game">
 			{error !== null ? <Alert error={error} /> : ''}
 			<Menu
+				selection={selection}
+				setSelection={setSelection}
+				currentKingdom={currentKingdom}
+				setCurrentKingdom={setCurrentKingdom}
 				arbiter={arbiter}
 				onUpdate={runUpdate}
 				onError={handleArbiterError}
@@ -140,10 +203,12 @@ const Game = ({ routerProps }) => {
 						>
 							<svg width={width} height={height}>
 								<Openhex
-									onHexClick={handleCleanError}
+									selection={selection}
+									onHexClick={handleHexClick}
 									onUpdate={runUpdate}
 									onArbiterError={handleArbiterError}
 									arbiter={arbiter}
+									currentKingdom={currentKingdom}
 								/>
 							</svg>
 						</UncontrolledReactSVGPanZoom>

@@ -30,7 +30,7 @@ const App = () => {
 										r={0}
 										s={0}
 									>
-										<Text className="fill-color-white">Custom</Text>
+										<Text className="fill-color-black">Custom</Text>
 									</Hexagon>
 								</Link>
 								<Link to="/rules">

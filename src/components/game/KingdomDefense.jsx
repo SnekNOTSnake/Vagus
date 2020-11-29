@@ -47,7 +47,7 @@ const ProtectedHexs = ({ hex, world, layout }) => {
 
 		setShields(shieldCandidates)
 
-		const timeout = setTimeout(() => setShow(true), 50)
+		const timeout = setTimeout(() => setShow(true), 25)
 		return () => clearTimeout(timeout)
 	}, [hex, layout, world])
 

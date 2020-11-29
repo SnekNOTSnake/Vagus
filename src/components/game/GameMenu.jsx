@@ -10,7 +10,15 @@ import Arbiter from '../../engine/Arbiter'
 /**
  * @param {{ arbiter: Arbiter }} param
  */
-const GameMenu = ({ arbiter, onUpdate, onArbiterError }) => {
+const GameMenu = (props) => {
+	const {
+		arbiter,
+		selection,
+		setCurrentKingdom,
+		onUpdate,
+		onArbiterError,
+	} = props
+
 	const handleUndo = () => {
 		try {
 			arbiter.undo()
@@ -23,7 +31,7 @@ const GameMenu = ({ arbiter, onUpdate, onArbiterError }) => {
 	const handleEndTurn = () => {
 		try {
 			arbiter.endTurn()
-			onUpdate()
+			setCurrentKingdom(null)
 		} catch (err) {
 			onArbiterError(err)
 		}
@@ -42,7 +50,7 @@ const GameMenu = ({ arbiter, onUpdate, onArbiterError }) => {
 			</button>
 			<button
 				className={`bg-color-${arbiter.currentPlayer.color}`}
-				disabled={arbiter.winner || arbiter.selection}
+				disabled={arbiter.winner || selection}
 				onClick={handleEndTurn}
 				type="button"
 			>
@@ -57,11 +65,15 @@ const GameMenu = ({ arbiter, onUpdate, onArbiterError }) => {
 
 GameMenu.propTypes = {
 	arbiter: PropTypes.instanceOf(Arbiter).isRequired,
+	selection: PropTypes.object,
+	setCurrentKingdom: PropTypes.func,
 	onUpdate: PropTypes.func,
 	onArbiterError: PropTypes.func,
 }
 
 GameMenu.defaultProps = {
+	selection: null,
+	setCurrentKingdom: () => null,
 	onUpdate: () => {},
 	onArbiterError: () => null,
 }

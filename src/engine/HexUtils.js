@@ -77,6 +77,24 @@ export default class HexUtils extends HexUtilsBase {
 	}
 
 	/**
+	 * @param {World} world
+	 * @param {Kingdom} kingdom
+	 *
+	 * @returns {Hex[]}
+	 */
+	static getHexsAdjacentToKingdom(world, kingdom) {
+		const adjacentHexsSet = new Set()
+
+		kingdom.hexs.forEach((hex) => {
+			this.neighbourHexs(world, hex)
+				.filter((neighbourHex) => neighbourHex.kingdom !== kingdom)
+				.forEach((neighbourHex) => adjacentHexsSet.add(neighbourHex))
+		})
+
+		return Array.from(adjacentHexsSet.values())
+	}
+
+	/**
 	 * Returns the passed Hex's kingdom hex brothers
 	 *
 	 * @param {World} world
@@ -242,7 +260,7 @@ export default class HexUtils extends HexUtilsBase {
 	 * @param {World} world
 	 * @param {Hex} hex
 	 *
-	 * @return {Func} Callback function for undo manager
+	 * @returns {Function} Callback function for undo manager
 	 */
 	static mergeKingdomsOnCapture(world, hex) {
 		const undoCallback = []
@@ -322,7 +340,7 @@ export default class HexUtils extends HexUtilsBase {
 	 * @param {World} world
 	 * @param {Hex} capturedHex
 	 *
-	 * @returns {Func}
+	 * @returns {Function}
 	 */
 	static splitKingdomsOnCapture(world, capturedHex) {
 		let undoCallbacks = false
@@ -343,7 +361,7 @@ export default class HexUtils extends HexUtilsBase {
 	 * @param {World} world
 	 * @param {Kingdom} kingdom
 	 *
-	 * @returns {Func}
+	 * @returns {Function}
 	 */
 	static splitKingdom(world, kingdom) {
 		const undoCallbacks = []
@@ -430,7 +448,7 @@ export default class HexUtils extends HexUtilsBase {
 	 *
 	 * @param {World} world
 	 *
-	 * @returns {Func}
+	 * @returns {Function}
 	 */
 	static rebuildKingdomsCapital(world) {
 		const undoCallbacks = []

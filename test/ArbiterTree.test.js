@@ -7,24 +7,24 @@ import Grave from '../src/engine/Grave'
 import { generateTestingWorld } from './testUtils'
 
 describe('ArbiterTree', () => {
-	describe('placeAt', () => {
+	describe('moveUnit', () => {
 		it('Makes a unit played its turn after clearing a tree', () => {
 			const world = generateTestingWorld('constant-seed-5')
 			const arbiter = new Arbiter(world)
-			const hex1 = new Hex(2, -1, -1)
+			const hex1 = new Hex(1, 0, -1)
+			const hex2 = new Hex(2, -1, -1)
 			const unit1 = new Unit(1)
 			const tree1 = new Tree()
 			const kingdom = world.getKingdomAt(hex1)
 
+			world.setEntityAt(hex1, unit1)
+			world.setEntityAt(hex2, tree1)
 			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
-			arbiter.setSelection(unit1)
-			world.setEntityAt(hex1, tree1)
-			arbiter.placeAt(hex1)
+			arbiter.moveUnit(hex1, hex2)
 
-			expect(world.getEntityAt(hex1)).toBe(unit1)
-			expect(world.getEntityAt(hex1).played).toBe(true)
-			expect(arbiter.selection).toBeNull()
+			expect(world.getEntityAt(hex1)).toBeNull()
+			expect(world.getEntityAt(hex2)).toBe(unit1)
+			expect(world.getEntityAt(hex2).played).toBe(true)
 		})
 
 		it('Transforms capital to a tree on a 2-hex kingdom if the capital is the only hex', () => {
@@ -36,10 +36,9 @@ describe('ArbiterTree', () => {
 			const unit1 = new Unit(2)
 			const kingdom = world.getKingdomAt(hex1)
 
+			world.setEntityAt(hex1, unit1)
 			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
-			arbiter.setSelection(unit1)
-			arbiter.placeAt(hex2)
+			arbiter.moveUnit(hex1, hex2)
 
 			expect(world.getEntityAt(hex2)).toBe(unit1)
 			expect(world.getEntityAt(hex3)).toBeInstanceOf(Tree)
@@ -56,11 +55,10 @@ describe('ArbiterTree', () => {
 			const unit2 = new Unit(1)
 			const kingdom = world.getKingdomAt(hex1)
 
-			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
-			arbiter.setSelection(unit1)
+			world.setEntityAt(hex1, unit1)
 			world.setEntityAt(hex3, unit2)
-			arbiter.placeAt(hex2)
+			arbiter.setCurrentPlayer(kingdom.player)
+			arbiter.moveUnit(hex1, hex2)
 
 			expect(world.getEntityAt(hex2)).toBe(unit1)
 			expect(world.getEntityAt(hex3)).toBeInstanceOf(Tree)
@@ -79,7 +77,6 @@ describe('ArbiterTree', () => {
 			const kingdom = world.getKingdomAt(hex1)
 
 			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
 			world.setEntityAt(hex1, grave1)
 			world.setEntityAt(hex2, grave2)
 
@@ -104,9 +101,8 @@ describe('ArbiterTree', () => {
 			const tree1 = new Tree(Tree.CONTINENTAL)
 			const kingdom = world.getKingdomAt(hex1)
 
-			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
 			world.setEntityAt(hex1, tree1)
+			arbiter.setCurrentPlayer(kingdom.player)
 
 			for (let i = 0; i < 80; i += 1) {
 				arbiter.endTurn()
@@ -126,9 +122,8 @@ describe('ArbiterTree', () => {
 			const tree1 = new Tree(Tree.COASTAL)
 			const kingdom = world.getKingdomAt(hex1)
 
-			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
 			world.setEntityAt(hex1, tree1)
+			arbiter.setCurrentPlayer(kingdom.player)
 
 			for (let i = 0; i < 80; i += 1) {
 				arbiter.endTurn()

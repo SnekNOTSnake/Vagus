@@ -1,6 +1,7 @@
 import UndoManager from 'undo-manager'
 import Unit from './Unit'
 import Tower from './Tower'
+import Hex from './Hex'
 import HexUtils from './HexUtils'
 import Grave from './Grave'
 import TreeUtils from './TreeUtils'
@@ -12,7 +13,7 @@ import TreeUtils from './TreeUtils'
  * @typedef {import('./Kingdom.js').default} Kingdom
  * @typedef {import('./Tower.js').default} Tower
  * @typedef {import('./Unit.js').default} Unit
- * @typedef {Tower|Unit} Selection
+ * @typedef {1|2|3|4} Level
  */
 export default class Arbiter {
 	static UNIT_PRICE = 10
@@ -26,14 +27,8 @@ export default class Arbiter {
 		/** @type {World} */
 		this.world = world
 
-		/** @type {Selection} */
-		this.selection = null
-
 		/** @type {Player} */
 		this.currentPlayer = null
-
-		/** @type {Kingdom} */
-		this.currentKingdom = null
 
 		/** @type {Player} */
 		this.winner = null
@@ -50,42 +45,10 @@ export default class Arbiter {
 	 */
 	setCurrentPlayer(player) {
 		this.currentPlayer = player
-		this.currentKingdom = null
 
 		this.undoManager.clear()
 
 		player.notifyTurn(this)
-	}
-
-	/**
-	 * For testing purpose
-	 *
-	 * @param {Kingdom} kingdom
-	 */
-	setCurrentKingdom(kingdom) {
-		this._checkPlayerSelected()
-
-		if (kingdom.player !== this.currentPlayer)
-			throw new Error(
-				"Trying to set current kingdom but it don't belong to the current player",
-			)
-
-		const lastKingdom = this.currentKingdom
-		this.currentKingdom = kingdom
-
-		this.undoManager.add({
-			undo: () => {
-				this.currentKingdom = lastKingdom
-			},
-			redo: () => this.setCurrentKingdom(kingdom),
-		})
-	}
-
-	/**
-	 * @param {Selection} selection
-	 */
-	setSelection(selection) {
-		this.selection = selection
 	}
 
 	undo() {
@@ -111,80 +74,101 @@ export default class Arbiter {
 	}
 
 	/**
-	 * Buy Units
+	 * Buy unit for specific hex and the hex's kingdom
+	 *
+	 * @param {Hex} hexTarget Hex coords or regular
+	 * @param {Kingdom} kingdom
+	 * @param {Level} level
 	 */
-	buyUnit() {
-		this._checkKingdomSelected()
+	buyUnitTowardsHex(hexTarget, kingdom, level = 1) {
+		const hexInWorld = this.world.getHexAt(hexTarget)
+		const isCapturing = hexInWorld.kingdom !== kingdom
 
-		if (this.selection instanceof Tower)
-			throw new Error('Trying to buy unit but selection has tower')
+		if (kingdom.player !== this.currentPlayer)
+			throw new Error(
+				"Trying to buy unit but kingdom doesn't belong to current player",
+			)
 
-		if (
-			this.selection instanceof Unit &&
-			this.selection.level >= Arbiter.UNIT_MAX_LEVEL
-		)
-			throw new Error('Trying to buy unit but selection has the maximum level')
+		if (!hexInWorld || !kingdom)
+			throw new Error('Trying to buy unit but hex or kingdom is undefiend')
 
-		if (this.currentKingdom.gold < Arbiter.UNIT_PRICE)
+		if (kingdom.gold < Arbiter.UNIT_PRICE * level)
 			throw new Error('Trying to buy unit but not enough gold')
 
-		this.currentKingdom.setGold(this.currentKingdom.gold - Arbiter.UNIT_PRICE)
-		if (this.selection === null) {
-			this.setSelection(new Unit())
-		} else {
-			this.selection.setLevel(this.selection.level + 1)
-		}
+		// The order is important here to make sure all conditions are satisfied
+		// before executing any action.
+		const boughtUnit = new Unit(level)
+		const undoCallback = isCapturing
+			? this._placeUnitCapture(new Unit(level), kingdom, hexInWorld)
+			: this._placeUnitInsideKingdom(boughtUnit, hexInWorld)
+		kingdom.setGold(kingdom.gold - Arbiter.UNIT_PRICE * level)
 
 		this.undoManager.add({
 			undo: () => {
-				if (this.selection.level - 1 === 0) this.setSelection(null)
-				else this.selection.setLevel(this.selection.level - 1)
-				this.currentKingdom.setGold(
-					this.currentKingdom.gold + Arbiter.UNIT_PRICE,
-				)
+				kingdom.setGold(kingdom.gold + Arbiter.UNIT_PRICE * level)
+				undoCallback()
 			},
 			redo: () => {
-				this.buyUnit()
+				this.buyUnitTowardsHex(hexInWorld, kingdom, level)
 			},
 		})
 	}
 
 	/**
-	 * buy Towers
+	 * Buy tower for specific hex and the hex's kingdom
+	 *
+	 * @param {Hex} hex Hex coords or regular
 	 */
-	buyTower() {
-		this._checkKingdomSelected()
+	buyTowerForHex(hex) {
+		const worldHex = this.world.getHexAt(hex)
 
-		if (this.selection !== null)
-			throw new Error('Trying to buy tower selection is not empty')
+		if (worldHex.player !== this.currentPlayer)
+			throw new Error(
+				'Trying to buy tower but hex target is not belong to current player',
+			)
 
-		if (this.currentKingdom.gold < Arbiter.TOWER_PRICE)
+		if (worldHex === undefined)
+			throw new Error('Trying to buy tower but hex target is undefined')
+
+		if (worldHex.kingdom.gold < Arbiter.TOWER_PRICE)
 			throw new Error('Trying to buy unit but not enough gold')
 
-		this.currentKingdom.setGold(this.currentKingdom.gold - Arbiter.TOWER_PRICE)
-		this.setSelection(new Tower())
+		// Buy tower and spawn it in the hex
+		// The order is important here to make sure all conditions are satisfied
+		// before executing any action.
+		const undoCallback = this._spawnTowerAt(worldHex)
+		worldHex.kingdom.setGold(worldHex.kingdom.gold - Arbiter.TOWER_PRICE)
 
 		this.undoManager.add({
 			undo: () => {
-				this.setSelection(null)
-				this.currentKingdom.setGold(
-					this.currentKingdom.gold + Arbiter.TOWER_PRICE,
-				)
+				worldHex.kingdom.setGold(worldHex.kingdom.gold + Arbiter.TOWER_PRICE)
+				undoCallback()
 			},
 			redo: () => {
-				this.buyTower()
+				this.buyTowerForHex(worldHex)
 			},
 		})
+	}
+
+	/**
+	 * @param {Hex} hex
+	 *
+	 * @returns {Function} Callback function for undo manager
+	 */
+	_spawnTowerAt(hex) {
+		// Make sure the hex is clear
+		if (hex.entity !== null)
+			throw new Error('Trying to spawn tower at a non-empty area')
+
+		hex.setEntity(new Tower())
+
+		return () => hex.setEntity(null)
 	}
 
 	/**
 	 * Cycle the turn
 	 */
 	endTurn() {
-		// Make sure the selection is empty
-		if (this.selection !== null)
-			throw new Error('Trying to end the turn but selection is not empty')
-
 		// reset played units
 		this._resetUnits()
 
@@ -275,103 +259,47 @@ export default class Arbiter {
 	}
 
 	/**
-	 * Determine what action when clicking on a certain hex
-	 *
-	 * @param {Hex} originHex
+	 * @param {Hex} from Hex coords or regular
+	 * @param {Hex} to Hex coords or regular
 	 */
-	smartAction(originHex) {
-		const hex = this.world.getHexAt(originHex)
+	moveUnit(from, to) {
+		const fromHex = this.world.getHexAt(from)
+		const toHex = this.world.getHexAt(to)
+		const isCapturing = fromHex.kingdom !== toHex.kingdom
 
-		if (this.selection === null) {
-			if (hex.kingdom) {
-				if (hex.kingdom === this.currentKingdom) {
-					if (hex.hasUnit()) {
-						this.takeUnitAt(hex)
-					}
-				} else if (hex.kingdom.player === this.currentPlayer) {
-					this.currentKingdom = hex.kingdom
+		if (fromHex.player !== this.currentPlayer)
+			throw new Error("Trying to move a unit but it's not their turn")
 
-					if (hex.hasUnit() && hex.entity.played === false) this.takeUnitAt(hex)
-				}
-			}
-		} else {
-			if (
-				hex.player === this.currentPlayer &&
-				hex.kingdom !== this.currentKingdom
-			)
-				throw new Error(
-					'Trying to select another kingdom but selection is not empty',
-				)
-			this.placeAt(hex)
-		}
-	}
+		if (fromHex.getUnit().played)
+			throw new Error('Trying to take a unit but it has been played')
 
-	/**
-	 * @param {Hex} originHex
-	 *
-	 * @returns {Unit} Selected unit
-	 */
-	takeUnitAt(originHex) {
-		this._checkKingdomSelected()
+		if (fromHex.kingdom !== toHex.kingdom && fromHex.player === toHex.player)
+			throw new Error('Trying to move a unit across owned kingdoms')
 
-		const hex = this.world.getHexAt(originHex)
-
-		if (this.selection !== null)
-			throw new Error('Attempting to take a unit but selection is not empty')
-
-		if (hex.kingdom !== this.currentKingdom)
-			throw new Error('Attempting to take a unit outside selected kingdom')
-
-		if (!hex.hasUnit())
-			throw new Error('Attempting to take a unit but the hex has no unit')
-
-		if (hex.getUnit().played)
-			throw new Error('Attempting to take a unit but it has been played')
-
-		this.setSelection(this.world.removeUnitAt(hex))
+		const undoCallback = isCapturing
+			? this._placeUnitCapture(fromHex, fromHex.kingdom, toHex)
+			: this._placeUnitInsideKingdom(fromHex, toHex)
 
 		this.undoManager.add({
-			undo: () => this.placeAt(originHex),
-			redo: () => this.takeUnitAt(originHex),
+			undo: undoCallback,
+			redo: () => this.moveUnit(fromHex, toHex),
 		})
 	}
 
 	/**
-	 * @param {Hex} originHex
+	 * @param {Hex|Unit} unitFrom
+	 * @param {Kingdom} kingdomFrom
+	 * @param {Hex} to
+	 *
+	 * @returns {Function} Callback function for undo manager
 	 */
-	placeAt(originHex) {
-		const hex = this.world.getHexAt(originHex)
-
-		if (hex === undefined)
-			throw new Error('Attempting to place entity at hex but hex is undefined')
-
-		if (this.selection instanceof Unit) {
-			this._placeUnitAt(hex)
-		} else if (this.selection instanceof Tower) {
-			this._placeTowerAt(hex)
-		}
-	}
-
-	/**
-	 * @param {Hex} hex
-	 */
-	_placeUnitAt(hex) {
-		if (hex.kingdom !== this.currentKingdom) {
-			this._placeUnitCapture(hex)
-		} else {
-			this._placeUnitInsideKingdom(hex)
-		}
-	}
-
-	/**
-	 * @param {Hex} hex
-	 */
-	_placeUnitCapture(hex) {
-		// Actions able to be undone
+	_placeUnitCapture(unitFrom, kingdomFrom, to) {
+		const isBoughtUnit = !(unitFrom instanceof Hex)
+		const fromEntity = isBoughtUnit ? unitFrom : unitFrom.entity
 		const undoCallbacks = []
 
 		// The hex should be adjacent to kingdom
-		if (!HexUtils.isHexAdjacentKingdom(this.world, hex, this.currentKingdom))
+		if (!HexUtils.isHexAdjacentKingdom(this.world, to, kingdomFrom))
 			throw new Error(
 				'Trying to capture a hex but hex is not adjacent to kingdom',
 			)
@@ -379,60 +307,57 @@ export default class Arbiter {
 		// The hex should have a lower level of protections or level 4 attacker
 		const protectingUnits = HexUtils.getProtectingUnits(
 			this.world,
-			hex,
-			this.selection.level,
+			to,
+			fromEntity.level,
 		)
-		if (
-			protectingUnits.length > 0 &&
-			this.selection.level < Arbiter.UNIT_MAX_LEVEL
-		)
+		if (protectingUnits.length > 0 && fromEntity.level < Arbiter.UNIT_MAX_LEVEL)
 			throw new Error(
 				'Trying to capture a hex but it has an equal or higher level of protection',
 			)
 
 		// Save it if player decided to undo their action
-		const lastHexEntity = hex.entity
-		const lastHexKingdom = hex.kingdom
-		const lastHexPlayer = hex.player
+		const lastHexEntity = to.entity
+		const lastHexKingdom = to.kingdom
+		const lastHexPlayer = to.player
 
 		// If hex has capital, reset its gold
-		if (hex.hasCapital()) {
-			const lastHexKingdomGold = hex.kingdom.gold
-			hex.kingdom.setGold(0)
+		if (to.hasCapital()) {
+			const lastHexKingdomGold = to.kingdom.gold
+			to.kingdom.setGold(0)
 
-			undoCallbacks.push(() => hex.kingdom.setGold(lastHexKingdomGold))
+			undoCallbacks.push(() => to.kingdom.setGold(lastHexKingdomGold))
 		}
 
-		// Place unit from selection to hex
-		hex.setEntity(this.selection)
-		hex.entity.setPlayed(true)
-		this.setSelection(null)
+		// Place unit from "from" to "to"
+		to.setEntity(fromEntity)
+		to.entity.setPlayed(true)
+		if (!isBoughtUnit) unitFrom.setEntity(null)
 
 		undoCallbacks.push(() => {
-			this.setSelection(hex.entity)
-			this.selection.setPlayed(false)
-			hex.setEntity(lastHexEntity)
+			if (!isBoughtUnit) unitFrom.setEntity(to.entity)
+			fromEntity.setPlayed(false)
+			to.setEntity(lastHexEntity)
 		})
 
 		// Remove the hex from enemy's kingdom
-		if (hex.kingdom) {
-			hex.kingdom.removeHex(hex)
+		if (to.kingdom) {
+			to.kingdom.removeHex(to)
 
-			undoCallbacks.push(() => hex.kingdom.addHex(hex))
+			undoCallbacks.push(() => to.kingdom.addHex(to))
 
 			// Remove kingdom if it only has 1 hex
-			if (hex.kingdom.hexs.length < 2) {
-				const lastKingdom = hex.kingdom
-				const lastKingdomHexs = hex.kingdom.hexs
+			if (to.kingdom.hexs.length < 2) {
+				const lastKingdom = to.kingdom
+				const lastKingdomHexs = to.kingdom.hexs
 
-				hex.kingdom.hexs[0].setKingdom(null)
+				to.kingdom.hexs[0].setKingdom(null)
 
 				undoCallbacks.push(() => {
-					hex.kingdom.hexs[0].setKingdom(lastKingdom)
+					to.kingdom.hexs[0].setKingdom(lastKingdom)
 				})
 
-				hex.kingdom.removeHex(hex.kingdom.hexs[0])
-				this.world.removeKingdom(hex.kingdom)
+				to.kingdom.removeHex(to.kingdom.hexs[0])
+				this.world.removeKingdom(to.kingdom)
 
 				undoCallbacks.push(() => {
 					this.world.addKingdom(lastKingdom)
@@ -443,124 +368,75 @@ export default class Arbiter {
 		}
 
 		// Set the hex's kingdom to the conqueror's kingdom
-		hex.setKingdom(this.currentKingdom)
-		hex.setPlayer(this.currentKingdom.player)
-		this.currentKingdom.addHex(hex)
+		to.setKingdom(kingdomFrom)
+		to.setPlayer(kingdomFrom.player)
+		kingdomFrom.addHex(to)
 
 		undoCallbacks.push(() => {
-			this.currentKingdom.removeHex(hex)
-			hex.setPlayer(lastHexPlayer)
-			hex.setKingdom(lastHexKingdom)
+			kingdomFrom.removeHex(to)
+			to.setPlayer(lastHexPlayer)
+			to.setKingdom(lastHexKingdom)
 		})
 
-		undoCallbacks.push(HexUtils.mergeKingdomsOnCapture(this.world, hex))
-		undoCallbacks.push(HexUtils.splitKingdomsOnCapture(this.world, hex))
+		undoCallbacks.push(HexUtils.mergeKingdomsOnCapture(this.world, to))
+		undoCallbacks.push(HexUtils.splitKingdomsOnCapture(this.world, to))
 
 		// Build a new capital for the split and/or merged kingdoms
 		undoCallbacks.push(HexUtils.rebuildKingdomsCapital(this.world))
 		undoCallbacks.push(TreeUtils.transformSingleHexUnitsToTrees(this.world))
 
-		// Reselect kingdom if it's disappeared because of merging
-		if (this.currentKingdom !== hex.kingdom) {
-			const lastSelectedKingdom = this.currentKingdom
-
-			this.currentKingdom = hex.kingdom
-
-			undoCallbacks.push(() => {
-				this.currentKingdom = lastSelectedKingdom
-			})
-		}
-
-		this.undoManager.add({
-			undo: () => undoCallbacks.reverse().forEach((func) => func()),
-			redo: () => this._placeUnitAt(hex),
-		})
+		return () => undoCallbacks.reverse().forEach((func) => func())
 	}
 
 	/**
-	 * @param {Hex} hex
+	 * @param {Hex|Unit} from
+	 * @param {Hex} to
+	 *
+	 * @returns {Function} Callback function for undo manager
 	 */
-	_placeUnitInsideKingdom(hex) {
+	_placeUnitInsideKingdom(from, to) {
+		const isBoughtUnit = !(from instanceof Hex)
+		const fromEntity = isBoughtUnit ? from : from.entity
 		const undoCallbacks = []
 
 		// Make sure the hex is not reserved by tower or capital
-		if (hex.hasCapital())
-			throw new Error('Trying to place unit in a hex reserved by a capital')
-
-		if (hex.hasTower())
-			throw new Error('Trying to place unit in a hex reserved by a tower')
+		if (to.hasCapital() || to.hasTower())
+			throw new Error(
+				'Trying to place unit in a hex reserved by a tower or capital',
+			)
 
 		// If it already has a unit, merge if possible, throw error otherwise
-		if (hex.hasUnit()) {
-			if (hex.entity.level + this.selection.level > Arbiter.UNIT_MAX_LEVEL)
+		if (to.hasUnit()) {
+			if (to.entity.level + fromEntity.level > Arbiter.UNIT_MAX_LEVEL)
 				throw new Error(
 					'Trying to merge two units but they exceeds the maximum level possible',
 				)
 
-			// Merge the unit in the hex and unit in the selection
-			const lastUnitSelection = this.selection
-			hex.entity.setLevel(hex.entity.level + this.selection.level)
-			this.setSelection(null)
+			// Merge `fromEntity` unit and unit inside "to"
+			const lastFromEntity = fromEntity
+			to.entity.setLevel(to.entity.level + fromEntity.level)
+			if (!isBoughtUnit) from.setEntity(null)
 
 			undoCallbacks.push(() => {
-				this.setSelection(lastUnitSelection)
-				hex.entity.setLevel(hex.entity.level - lastUnitSelection.level)
+				if (!isBoughtUnit) from.setEntity(lastFromEntity)
+				to.entity.setLevel(to.entity.level - lastFromEntity.level)
 			})
 		} else {
 			// The hex has tree or grave, mark the unit as `played`
-			if (hex.hasTree() || hex.hasGrave()) this.selection.setPlayed(true)
+			if (to.hasTree() || to.hasGrave()) fromEntity.setPlayed(true)
 
-			const lastUnitSelection = this.selection
-			const lastHexEntity = hex.entity
-			hex.setEntity(this.selection)
-			this.setSelection(null)
+			const lastFromEntity = fromEntity
+			const lastHexEntity = to.entity
+			to.setEntity(fromEntity)
+			if (!isBoughtUnit) from.setEntity(null)
 
 			undoCallbacks.push(() => {
-				hex.entity.setPlayed(false)
-				this.setSelection(lastUnitSelection)
-				hex.setEntity(lastHexEntity)
+				to.entity.setPlayed(false)
+				if (!isBoughtUnit) from.setEntity(lastFromEntity)
+				to.setEntity(lastHexEntity)
 			})
 		}
 
-		this.undoManager.add({
-			undo: () => undoCallbacks.reverse().forEach((f) => f()),
-			redo: () => this._placeUnitAt(hex),
-		})
-	}
-
-	/**
-	 * @param {Hex} hex
-	 */
-	_placeTowerAt(hex) {
-		// Make sure the hex is inside the current kingdom
-		if (hex.kingdom !== this.currentKingdom)
-			throw new Error('Trying to place tower outside current kingdom')
-
-		// Make sure the hex is clear
-		if (hex.entity !== null)
-			throw new Error('Trying to place tower at a non-empty area')
-
-		hex.setEntity(this.selection)
-		this.setSelection(null)
-
-		this.undoManager.add({
-			undo: () => {
-				this.setSelection(hex.entity)
-				hex.setEntity(null)
-			},
-			redo: () => this._placeTowerAt(hex),
-		})
-	}
-
-	/**
-	 * @param {Player} player must be this player
-	 */
-	_checkPlayerSelected() {
-		if (this.currentPlayer === null) throw new Error('No player selected')
-	}
-
-	_checkKingdomSelected() {
-		if (this.currentKingdom === null) throw new Error('No kingdom selected')
-		this._checkPlayerSelected()
+		return () => undoCallbacks.reverse().forEach((func) => func())
 	}
 }

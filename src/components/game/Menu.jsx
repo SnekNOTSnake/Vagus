@@ -5,7 +5,15 @@ import GameMenu from './GameMenu'
 import KingdomMenu from './KingdomMenu'
 import Arbiter from '../../engine/Arbiter'
 
-const Menu = ({ arbiter, onUpdate, onError }) => {
+const Menu = ({
+	arbiter,
+	currentKingdom,
+	selection,
+	setSelection,
+	setCurrentKingdom,
+	onUpdate,
+	onError,
+}) => {
 	return (
 		<div className="Menu">
 			<div className="big-menu">
@@ -16,37 +24,47 @@ const Menu = ({ arbiter, onUpdate, onError }) => {
 						Home
 					</Link>
 				</div>
-				{arbiter.currentKingdom === null ? (
+				{currentKingdom === null ? (
 					''
 				) : (
 					<KingdomMenu
+						currentKingdom={currentKingdom}
+						selection={selection}
+						setSelection={setSelection}
+						arbiter={arbiter}
 						onArbiterError={onError}
 						onUpdate={onUpdate}
-						arbiter={arbiter}
 					/>
 				)}
 				<GameMenu
+					selection={selection}
+					setCurrentKingdom={setCurrentKingdom}
+					arbiter={arbiter}
 					onArbiterError={onError}
 					onUpdate={onUpdate}
-					arbiter={arbiter}
 				/>
 			</div>
-			{arbiter.currentKingdom === null ? (
+			{currentKingdom === null ? (
 				''
 			) : (
 				<div className="small-menu-top">
 					<KingdomMenu
+						currentKingdom={currentKingdom}
+						selection={selection}
+						setSelection={setSelection}
+						arbiter={arbiter}
 						onArbiterError={onError}
 						onUpdate={onUpdate}
-						arbiter={arbiter}
 					/>
 				</div>
 			)}
 			<div className="small-menu-bottom">
 				<GameMenu
+					selection={selection}
+					setCurrentKingdom={setCurrentKingdom}
+					arbiter={arbiter}
 					onArbiterError={onError}
 					onUpdate={onUpdate}
-					arbiter={arbiter}
 				/>
 			</div>
 		</div>
@@ -55,11 +73,19 @@ const Menu = ({ arbiter, onUpdate, onError }) => {
 
 Menu.propTypes = {
 	arbiter: PropTypes.instanceOf(Arbiter).isRequired,
+	selection: PropTypes.object,
+	setSelection: PropTypes.func,
+	currentKingdom: PropTypes.object,
+	setCurrentKingdom: PropTypes.func,
 	onUpdate: PropTypes.func,
 	onError: PropTypes.func,
 }
 
 Menu.defaultProps = {
+	selection: null,
+	setSelection: () => null,
+	currentKingdom: null,
+	setCurrentKingdom: () => null,
 	onUpdate: () => null,
 	onError: () => null,
 }

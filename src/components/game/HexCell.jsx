@@ -33,11 +33,15 @@ const hexContent = (hex, movable) => {
  * @param {{ hex: Hex }} param
  */
 const HexCell = ({ hex, empty, onClick, movable, clickable }) => {
-	const classes = ['HexCell']
-	if (hex?.player?.color !== undefined && !empty)
-		classes.push(`fill-color-${hex.player.color}`)
-	if (empty) classes.push('fill-color-shadow')
-	if (movable || clickable) classes.push('clickable')
+	const classes = React.useMemo(() => {
+		const array = ['HexCell']
+		if (hex?.player?.color !== undefined && !empty)
+			array.push(`fill-color-${hex.player.color}`)
+		if (empty) array.push('fill-color-shadow')
+		if (movable || clickable) array.push('clickable')
+
+		return array
+	}, [clickable, empty, hex?.player?.color, movable])
 
 	const onClickHandler = (e) => {
 		onClick(hex, e)
