@@ -11,6 +11,7 @@ import {
 	TOWER_PRICE,
 	CUT_KINGDOM_TREE_GOLD_GAIN,
 } from '../constants/variables'
+import Tree from './Tree'
 
 /**
  * @typedef {import('./World').default} World
@@ -439,8 +440,8 @@ export default class Arbiter {
 			undoCallbacks.push(() => {
 				to.entity.setPlayed(false)
 				if (!isBoughtUnit) from.setEntity(lastFromEntity)
-				if (to.hasTree())
-					to.kingdom.setGold(to.kingdom.gold + CUT_KINGDOM_TREE_GOLD_GAIN)
+				if (lastHexEntity instanceof Tree)
+					to.kingdom.setGold(to.kingdom.gold - CUT_KINGDOM_TREE_GOLD_GAIN)
 				to.setEntity(lastHexEntity)
 			})
 		}
