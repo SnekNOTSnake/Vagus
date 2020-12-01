@@ -7,16 +7,16 @@ import Kingdom from './Kingdom'
 import World from './World'
 import worldConfig from './worldConfig'
 import HumanPlayer from './HumanPlayer'
-import AIPlayer from './AIPlayer'
+import AiHard from './ai/AiHard'
 import TreeUtils from './TreeUtils'
 
 const defaultPlayers = [
 	new HumanPlayer(),
-	new AIPlayer(),
-	new AIPlayer(),
-	new AIPlayer(),
-	new AIPlayer(),
-	new AIPlayer(),
+	new AiHard(),
+	new AiHard(),
+	new AiHard(),
+	new AiHard(),
+	new AiHard(),
 ]
 
 /**

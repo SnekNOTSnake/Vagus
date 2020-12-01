@@ -4,11 +4,13 @@ import PropTypes from 'prop-types'
 import { UncontrolledReactSVGPanZoom } from 'react-svg-pan-zoom'
 import { AutoSizer } from 'react-virtualized'
 import querystring from 'query-string'
+import { UNIT_PRICE, TOWER_PRICE } from '../../constants/variables'
 import { buyTower, buyUnit } from '../hooks/hookUtils'
 import Openhex from './Openhex'
 import Arbiter from '../../engine/Arbiter'
 import HumanPlayer from '../../engine/HumanPlayer'
-import AIPlayer from '../../engine/AIPlayer'
+import AiEasy from '../../engine/ai/AiEasy'
+import AiHard from '../../engine/ai/AiHard'
 import WorldGenerator from '../../engine/WorldGenerator'
 import Unit from '../../engine/Unit'
 import Tower from '../../engine/Tower'
@@ -42,9 +44,13 @@ const Game = ({ routerProps }) => {
 	const [error, setError] = React.useState(null)
 	const [, update] = React.useState(null)
 
-	const [currentKingdom, setCurrentKingdom] = React.useState(null)
 	// Selection could be Hex or an Entity (bought unit or tower)
+	const [currentKingdom, setCurrentKingdom] = React.useState(null)
 	const [selection, setSelection] = React.useState(null)
+
+	// Show Winner
+	const [showWinner, setShowWinner] = React.useState(true)
+	const closeAlert = () => setShowWinner(false)
 
 	const svgPanZoom = React.useRef(null)
 
@@ -66,9 +72,11 @@ const Game = ({ routerProps }) => {
 		}
 
 		if (parsed?.players?.length >= 2 && parsed?.players?.length <= 6) {
-			const players = parsed.players.map((type) =>
-				type === 'human' ? new HumanPlayer() : new AIPlayer(),
-			)
+			const players = parsed.players.map((type) => {
+				// type === 'human' ? new HumanPlayer() : new AiHard()
+				if (type === 'human') return new HumanPlayer()
+				return parsed.difficulty === 'easy' ? new AiEasy() : new AiHard()
+			})
 			config.players = players
 		}
 
@@ -82,6 +90,7 @@ const Game = ({ routerProps }) => {
 
 	// Hex click handler
 	const handleHexClick = (hex) => {
+		if (arbiter.winner) return
 		setError(null)
 
 		try {
@@ -146,13 +155,11 @@ const Game = ({ routerProps }) => {
 						break
 
 					case 'KeyA':
-						if (currentKingdom?.gold >= Arbiter.UNIT_PRICE)
-							buyUnit(setSelection)
+						if (currentKingdom?.gold >= UNIT_PRICE) buyUnit(setSelection)
 						break
 
 					case 'KeyS':
-						if (currentKingdom?.gold >= Arbiter.TOWER_PRICE)
-							buyTower(setSelection)
+						if (currentKingdom?.gold >= TOWER_PRICE) buyTower(setSelection)
 						break
 
 					default:
@@ -172,6 +179,21 @@ const Game = ({ routerProps }) => {
 	return arbiter !== null ? (
 		<div className="Game">
 			{error !== null ? <Alert error={error} /> : ''}
+			{arbiter.winner && showWinner ? (
+				<div className="winner">
+					<h2>Player {arbiter.winner.color + 1} Win!</h2>
+					<button
+						className={`bg-color-${arbiter.winner.color}`}
+						type="button"
+						onClick={closeAlert}
+					>
+						Okay
+					</button>
+				</div>
+			) : (
+				''
+			)}
+
 			<Menu
 				selection={selection}
 				setSelection={setSelection}

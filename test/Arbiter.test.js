@@ -1,4 +1,5 @@
 import expect from 'expect'
+import { UNIT_PRICE } from '../src/constants/variables'
 import Arbiter from '../src/engine/Arbiter'
 import Hex from '../src/engine/Hex'
 import Unit from '../src/engine/Unit'
@@ -335,7 +336,7 @@ describe('Arbiter', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 			arbiter.buyUnitTowardsHex(hex1, kingdom, buyLevel)
 
-			expect(kingdom.gold).toBe(previousGold - Arbiter.UNIT_PRICE * buyLevel)
+			expect(kingdom.gold).toBe(previousGold - UNIT_PRICE * buyLevel)
 			expect(world.getEntityAt(hex1)).toBeInstanceOf(Unit)
 			expect(world.getEntityAt(hex1).level).toBe(3)
 			expect(world.getEntityAt(hex1).played).toBe(false)
@@ -356,9 +357,7 @@ describe('Arbiter', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 			arbiter.buyUnitTowardsHex(hex1, kingdom, 3)
 
-			expect(kingdom.gold).toBe(
-				previousKingdomGold - Arbiter.UNIT_PRICE * buyLevel,
-			)
+			expect(kingdom.gold).toBe(previousKingdomGold - UNIT_PRICE * buyLevel)
 			expect(world.getEntityAt(hex1).level).toBe(previousUnitLevel + buyLevel)
 		})
 
@@ -376,7 +375,7 @@ describe('Arbiter', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 			arbiter.buyUnitTowardsHex(hex2, kingdom, buyLevel)
 
-			expect(kingdom.gold).toBe(previousGold - Arbiter.UNIT_PRICE * buyLevel)
+			expect(kingdom.gold).toBe(previousGold - UNIT_PRICE * buyLevel)
 			expect(world.getEntityAt(hex2)).toBeInstanceOf(Unit)
 			expect(world.getEntityAt(hex2).level).toBe(3)
 			expect(world.getEntityAt(hex2).played).toBe(true)

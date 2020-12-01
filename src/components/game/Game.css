@@ -56,6 +56,19 @@
 	color: #fff;
 	z-index: 100;
 }
+.Game .winner {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 95%;
+	max-width: 400px;
+	padding: 20px;
+	background-color: #fff;
+	border-radius: 4px;
+	box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.75), 0px 0px 4px rgba(0, 0, 0, 0.5);
+	z-index: 200;
+}
 
 /* Common menu */
 .Game .KingdomMenu .stats .gold h2 img {

@@ -1,9 +1,9 @@
-import AIPlayer from './AIPlayer'
+import AiHard from './ai/AiHard'
 import HumanPlayer from './HumanPlayer'
 
 /**
  * @typedef {import('./HumanPlayer').default} HumanPlayer
- * @typedef {import('./AIPlayer').default} AIPlayer
+ * @typedef {import('./ai/ArtificialIntelligence').default} AIPlayer
  */
 
 const defaults = {
@@ -25,7 +25,7 @@ const defaults = {
 	 *
 	 * @type {(HumanPlayer|AIPlayer)[]}
 	 */
-	players: [new HumanPlayer(), new AIPlayer(), new AIPlayer(), new AIPlayer()],
+	players: [new HumanPlayer(), new AiHard(), new AiHard(), new AiHard()],
 
 	/**
 	 * Probability of spawning initial trees over each empty hexs

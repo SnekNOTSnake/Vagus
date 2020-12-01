@@ -1,4 +1,4 @@
-import Arbiter from '../../engine/Arbiter'
+import { UNIT_MAX_LEVEL } from '../../constants/variables'
 import Tower from '../../engine/Tower'
 import Unit from '../../engine/Unit'
 
@@ -13,7 +13,7 @@ import Unit from '../../engine/Unit'
 export const buyUnit = (setSelectionFunc) => {
 	setSelectionFunc((initVal) => {
 		if (initVal instanceof Unit)
-			if (initVal.level >= Arbiter.UNIT_MAX_LEVEL) return new Unit(1)
+			if (initVal.level >= UNIT_MAX_LEVEL) return new Unit(1)
 			else return new Unit(initVal.level + 1)
 		return new Unit(1)
 	})

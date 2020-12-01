@@ -1,6 +1,7 @@
 import { HexUtils as HexUtilsBase } from 'react-hexgrid'
 import Capital from './Capital'
 import Kingdom from './Kingdom'
+import { UNIT_MAX_LEVEL } from '../constants/variables'
 
 /**
  * @typedef {import('./World').default} World
@@ -26,6 +27,44 @@ export default class HexUtils extends HexUtilsBase {
 		return this.neighbours(originHex)
 			.map((hex) => world.getHexAt(hex))
 			.filter((hex) => hex !== undefined)
+	}
+
+	/**
+	 * Returns true if one of the hex neighbours is `undefined`
+	 *
+	 * @param {World} world
+	 * @param {Hex} hex
+	 *
+	 * @returns {Boolean}
+	 */
+	static isHexCoastal(world, hex) {
+		return HexUtils.neighbours(hex).some((hexCoords) => {
+			return world.getHexAt(hexCoords) === undefined
+		})
+	}
+
+	/**
+	 * Whether the hex is next to a hex that belongs to another kingdom
+	 *
+	 * @param {World} world
+	 * @param {Hex} hex
+	 *
+	 * @returns {Boolean}
+	 */
+	static isHexInPerimeter(world, hex) {
+		return this.neighbourHexs(world, hex).some((neighbourHex) => {
+			return neighbourHex.player !== hex.player && neighbourHex.kingdom !== null
+		})
+	}
+
+	/**
+	 * @param {World} world
+	 * @param {Hex} hex
+	 */
+	static isHexProtectedByTower(world, hex) {
+		return HexUtils.neighbourHexs(world, hex)
+			.filter((neighbourHex) => neighbourHex.player === hex.player)
+			.some((neighbourHex) => neighbourHex.hasTower())
 	}
 
 	/**
@@ -226,6 +265,7 @@ export default class HexUtils extends HexUtilsBase {
 	/**
 	 * Returns all units that has higher or equal level to attacker.
 	 * Including the hex itself and its neighbours.
+	 * If the `level` is greater or equal to `UNIT_MAX_LEVEL`, returns `[]`.
 	 *
 	 * @param {World} world
 	 * @param {Hex} originHex
@@ -234,6 +274,8 @@ export default class HexUtils extends HexUtilsBase {
 	 * @returns {Entity[]}
 	 */
 	static getProtectingUnits(world, originHex, level = -5) {
+		if (level >= UNIT_MAX_LEVEL) return []
+
 		const hex = world.getHexAt(originHex)
 		const protectingUnits = []
 

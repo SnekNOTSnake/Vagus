@@ -11,12 +11,32 @@
 	display: block;
 	width: 100%;
 	border-radius: 4px;
-	border: 1px solid rgba(255, 255, 255);
+	border: 1px solid rgba(255, 255, 255, 0.75);
 	background-color: rgba(255, 255, 255, 0.05);
 	color: #fff;
 	font-size: 1.2em;
 	padding: 12px 20px;
 	margin-bottom: 24px;
+}
+
+.Custom .select select {
+	appearance: none;
+}
+.Custom .select {
+	position: relative;
+}
+.Custom .select::after {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 50%;
+	right: 20px;
+	transform: translateY(-25%);
+	border: 6px solid transparent;
+	border-top-color: #fff;
+}
+.Custom .select select option {
+	color: #222;
 }
 
 .Custom .playButton {

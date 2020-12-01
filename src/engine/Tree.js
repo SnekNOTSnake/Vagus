@@ -1,12 +1,12 @@
 import Entity from './Entity'
+import { TREE_CONTINENTAL } from '../constants/variables'
 
 /**
- * @typedef {'CONTINENTAL'|'COASTAL'} Type
+ * @typedef { import('../constants/variables').TREE_CONTINENTAL }  TREE_CONTINENTAL
+ * @typedef { import('../constants/variables').TREE_COASTAL } TREE_COASTAL
+ * @typedef {TREE_CONTINENTAL|TREE_COASTAL} Type
  */
 export default class Tree extends Entity {
-	static CONTINENTAL = 'continental'
-	static COASTAL = 'coastal'
-
 	/**
 	 * @param {Type} type
 	 */
@@ -14,7 +14,7 @@ export default class Tree extends Entity {
 		super()
 
 		if (!type) {
-			this.type = Tree.CONTINENTAL
+			this.type = TREE_CONTINENTAL
 			return
 		}
 

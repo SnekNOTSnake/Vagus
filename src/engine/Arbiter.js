@@ -5,21 +5,25 @@ import Hex from './Hex'
 import HexUtils from './HexUtils'
 import Grave from './Grave'
 import TreeUtils from './TreeUtils'
+import {
+	UNIT_PRICE,
+	UNIT_MAX_LEVEL,
+	TOWER_PRICE,
+	CUT_KINGDOM_TREE_GOLD_GAIN,
+} from '../constants/variables'
 
 /**
- * @typedef {import('./World.js').default} World
- * @typedef {import('./Hex.js').default} Hex
- * @typedef {import('./Player.js').default} Player
- * @typedef {import('./Kingdom.js').default} Kingdom
- * @typedef {import('./Tower.js').default} Tower
- * @typedef {import('./Unit.js').default} Unit
+ * @typedef {import('./World').default} World
+ * @typedef {import('./Hex').default} Hex
+ * @typedef {import('./ai/ArtificialIntelligence').default} AiPlayer
+ * @typedef {import('./HumanPlayer').default} HumanPlayer
+ * @typedef {import('./Kingdom').default} Kingdom
+ * @typedef {import('./Tower').default} Tower
+ * @typedef {import('./Unit').default} Unit
+ * @typedef {AiPlayer & HumanPlayer} Player
  * @typedef {1|2|3|4} Level
  */
 export default class Arbiter {
-	static UNIT_PRICE = 10
-	static UNIT_MAX_LEVEL = 4
-	static TOWER_PRICE = 15
-
 	/**
 	 * @param {World} world
 	 */
@@ -92,7 +96,7 @@ export default class Arbiter {
 		if (!hexInWorld || !kingdom)
 			throw new Error('Trying to buy unit but hex or kingdom is undefiend')
 
-		if (kingdom.gold < Arbiter.UNIT_PRICE * level)
+		if (kingdom.gold < UNIT_PRICE * level)
 			throw new Error('Trying to buy unit but not enough gold')
 
 		// The order is important here to make sure all conditions are satisfied
@@ -101,11 +105,11 @@ export default class Arbiter {
 		const undoCallback = isCapturing
 			? this._placeUnitCapture(new Unit(level), kingdom, hexInWorld)
 			: this._placeUnitInsideKingdom(boughtUnit, hexInWorld)
-		kingdom.setGold(kingdom.gold - Arbiter.UNIT_PRICE * level)
+		kingdom.setGold(kingdom.gold - UNIT_PRICE * level)
 
 		this.undoManager.add({
 			undo: () => {
-				kingdom.setGold(kingdom.gold + Arbiter.UNIT_PRICE * level)
+				kingdom.setGold(kingdom.gold + UNIT_PRICE * level)
 				undoCallback()
 			},
 			redo: () => {
@@ -130,18 +134,18 @@ export default class Arbiter {
 		if (worldHex === undefined)
 			throw new Error('Trying to buy tower but hex target is undefined')
 
-		if (worldHex.kingdom.gold < Arbiter.TOWER_PRICE)
+		if (worldHex.kingdom.gold < TOWER_PRICE)
 			throw new Error('Trying to buy unit but not enough gold')
 
 		// Buy tower and spawn it in the hex
 		// The order is important here to make sure all conditions are satisfied
 		// before executing any action.
 		const undoCallback = this._spawnTowerAt(worldHex)
-		worldHex.kingdom.setGold(worldHex.kingdom.gold - Arbiter.TOWER_PRICE)
+		worldHex.kingdom.setGold(worldHex.kingdom.gold - TOWER_PRICE)
 
 		this.undoManager.add({
 			undo: () => {
-				worldHex.kingdom.setGold(worldHex.kingdom.gold + Arbiter.TOWER_PRICE)
+				worldHex.kingdom.setGold(worldHex.kingdom.gold + TOWER_PRICE)
 				undoCallback()
 			},
 			redo: () => {
@@ -174,8 +178,6 @@ export default class Arbiter {
 
 		// Check who won
 		if (this._checkWhoWon()) {
-			// eslint-disable-next-line
-			window.alert(`Player with a color of ${this.currentPlayer.color} won`)
 			this.winner = this.currentPlayer
 			return
 		}
@@ -310,7 +312,7 @@ export default class Arbiter {
 			to,
 			fromEntity.level,
 		)
-		if (protectingUnits.length > 0 && fromEntity.level < Arbiter.UNIT_MAX_LEVEL)
+		if (protectingUnits.length > 0)
 			throw new Error(
 				'Trying to capture a hex but it has an equal or higher level of protection',
 			)
@@ -389,7 +391,7 @@ export default class Arbiter {
 	}
 
 	/**
-	 * @param {Hex|Unit} from
+	 * @param {Hex | Unit} from
 	 * @param {Hex} to
 	 *
 	 * @returns {Function} Callback function for undo manager
@@ -407,7 +409,7 @@ export default class Arbiter {
 
 		// If it already has a unit, merge if possible, throw error otherwise
 		if (to.hasUnit()) {
-			if (to.entity.level + fromEntity.level > Arbiter.UNIT_MAX_LEVEL)
+			if (to.entity.level + fromEntity.level > UNIT_MAX_LEVEL)
 				throw new Error(
 					'Trying to merge two units but they exceeds the maximum level possible',
 				)
@@ -425,6 +427,10 @@ export default class Arbiter {
 			// The hex has tree or grave, mark the unit as `played`
 			if (to.hasTree() || to.hasGrave()) fromEntity.setPlayed(true)
 
+			// Gain gold if hex kingdom has tree
+			if (to.hasTree())
+				to.kingdom.setGold(to.kingdom.gold + CUT_KINGDOM_TREE_GOLD_GAIN)
+
 			const lastFromEntity = fromEntity
 			const lastHexEntity = to.entity
 			to.setEntity(fromEntity)
@@ -433,6 +439,8 @@ export default class Arbiter {
 			undoCallbacks.push(() => {
 				to.entity.setPlayed(false)
 				if (!isBoughtUnit) from.setEntity(lastFromEntity)
+				if (to.hasTree())
+					to.kingdom.setGold(to.kingdom.gold + CUT_KINGDOM_TREE_GOLD_GAIN)
 				to.setEntity(lastHexEntity)
 			})
 		}

@@ -32,6 +32,7 @@ const GameMenu = (props) => {
 		try {
 			arbiter.endTurn()
 			setCurrentKingdom(null)
+			onUpdate()
 		} catch (err) {
 			onArbiterError(err)
 		}
@@ -42,7 +43,7 @@ const GameMenu = (props) => {
 			<h2>Turn {arbiter.world.turn + 1}</h2>
 			<button
 				className={`bg-color-${arbiter.currentPlayer.color}`}
-				disabled={!arbiter.hasUndo()}
+				disabled={!arbiter.hasUndo() || arbiter.winner}
 				onClick={handleUndo}
 				type="button"
 			>

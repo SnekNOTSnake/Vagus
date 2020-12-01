@@ -13,16 +13,19 @@ const defaultPlayers = [
 ]
 
 const Custom = ({ routerProps }) => {
-	// World Size
-	const [worldSize, setWorldSize] = React.useState('medium')
-	const worldSizeChange = (e) => {
-		setWorldSize(e.currentTarget.value)
-	}
-
-	// Seed
-	const [seedInput, setSeedInput] = React.useState('')
-	const seedInputChange = (e) => {
-		setSeedInput(e.currentTarget.value)
+	// Inputs
+	const [inputs, setInputs] = React.useState({
+		seed: '',
+		worldSize: 'large',
+		aiDifficulty: 'hard',
+	})
+	const inputChange = (e) => {
+		const { name, value } = e.currentTarget
+		setInputs((initVal) => {
+			const newVal = { ...initVal }
+			newVal[name] = value
+			return newVal
+		})
 	}
 
 	// Players
@@ -54,10 +57,11 @@ const Custom = ({ routerProps }) => {
 	// Play Button
 	const handlePlayButtonClick = () => {
 		const rawQuery = {
-			world: worldSize,
+			world: inputs.worldSize,
+			difficulty: inputs.aiDifficulty,
 			players: players.map((player) => player.type),
 		}
-		if (seedInput) rawQuery.seed = seedInput
+		if (inputs.seed) rawQuery.seed = inputs.seed
 		const query = querystring.stringify(rawQuery)
 		routerProps.history.push(`/game/?${query}`)
 	}
@@ -69,16 +73,33 @@ const Custom = ({ routerProps }) => {
 				<input
 					placeholder="Seed"
 					type="text"
-					value={seedInput}
-					onChange={seedInputChange}
+					value={inputs.seed}
+					onChange={inputChange}
+					name="seed"
 				/>
-				<select onChange={worldSizeChange} value={worldSize} name="world-size">
-					<option value="tiny">Tiny world</option>
-					<option value="small">Small world</option>
-					<option value="medium">Medium world</option>
-					<option value="large">Large world</option>
-					<option value="extreme">Extreme world</option>
-				</select>
+				<div className={style.select}>
+					<select
+						onChange={inputChange}
+						value={inputs.worldSize}
+						name="worldSize"
+					>
+						<option value="tiny">Tiny world</option>
+						<option value="small">Small world</option>
+						<option value="medium">Medium world</option>
+						<option value="large">Large world</option>
+						<option value="extreme">Extreme world</option>
+					</select>
+				</div>
+				<div className={style.select}>
+					<select
+						onChange={inputChange}
+						value={inputs.aiDifficulty}
+						name="aiDifficulty"
+					>
+						<option value="easy">Easy</option>
+						<option value="hard">Hard</option>
+					</select>
+				</div>
 				<div className={style.players}>
 					{players.map((player) => (
 						<div

@@ -30,7 +30,7 @@ export default class World {
 	}
 
 	/**
-	 * @param {Hex} hex
+	 * @param {Hex} hex Could be coords or normal hex
 	 *
 	 * @returns {Hex}
 	 */
@@ -41,7 +41,7 @@ export default class World {
 	/**
 	 * For testing purpose
 	 *
-	 * @param {Hex} hex
+	 * @param {Hex} hex Could be coords or normal hex
 	 *
 	 * @returns {Entity}
 	 */
@@ -71,7 +71,7 @@ export default class World {
 	}
 
 	/**
-	 * @param {Hex} hex
+	 * @param {Hex} hex Could be coords or normal hex
 	 * @param {Entity} entity
 	 */
 	setEntityAt(hex, entity) {
@@ -79,18 +79,18 @@ export default class World {
 	}
 
 	/**
-	 * @param {Hex} originHex
+	 * @param {Hex} hex Could be coords or normal hex
 	 *
 	 * @returns {Unit}
 	 */
-	removeUnitAt(originHex) {
-		const hex = this.getHexAt(originHex)
-		const { entity } = hex
+	removeUnitAt(hex) {
+		const worldHex = this.getHexAt(hex)
+		const { entity } = worldHex
 
-		if (!hex.hasUnit())
+		if (!worldHex.hasUnit())
 			throw new Error('Attempting to remove unit but the hex has no unit')
 
-		hex.setEntity(null)
+		worldHex.setEntity(null)
 
 		return entity
 	}
@@ -98,7 +98,7 @@ export default class World {
 	/**
 	 * For testing purpose.
 	 *
-	 * @param {Hex} originHex
+	 * @param {Hex} hex Could be coords or normal hex
 	 *
 	 * @returns {Kingdom}
 	 */

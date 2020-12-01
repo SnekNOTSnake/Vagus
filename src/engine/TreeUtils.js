@@ -1,3 +1,4 @@
+import { TREE_COASTAL, TREE_CONTINENTAL } from '../constants/variables'
 import HexUtils from './HexUtils'
 import Tree from './Tree'
 
@@ -9,27 +10,15 @@ import Tree from './Tree'
  */
 export default class TreeUtils {
 	/**
-	 * Returns true if one of the hex neighbours is `undefined`
-	 *
-	 * @param {World} world
-	 * @param {Hex} hex
-	 *
-	 * @returns {Boolean}
-	 */
-	static isHexCoastal(world, hex) {
-		return HexUtils.neighbours(hex).some((hexCoords) => {
-			return world.getHexAt(hexCoords) === undefined
-		})
-	}
-
-	/**
 	 * @param {World} world
 	 * @param {Hex} hex
 	 *
 	 * @returns {Tree}
 	 */
 	static spawnTreeOnWorldHex(world, hex) {
-		const type = this.isHexCoastal(world, hex) ? Tree.COASTAL : Tree.CONTINENTAL
+		const type = HexUtils.isHexCoastal(world, hex)
+			? TREE_COASTAL
+			: TREE_CONTINENTAL
 		const tree = hex.setEntity(new Tree(type))
 		return tree
 	}
@@ -66,11 +55,11 @@ export default class TreeUtils {
 		const potentialSpawn = []
 
 		world.hexs
-			.filter((hex) => this.isHexCoastal(world, hex))
+			.filter((hex) => HexUtils.isHexCoastal(world, hex))
 			.filter((hex) => hex.hasTree())
 			.forEach((hex) =>
 				HexUtils.neighbourHexs(world, hex)
-					.filter((neighbourHex) => this.isHexCoastal(world, neighbourHex))
+					.filter((neighbourHex) => HexUtils.isHexCoastal(world, neighbourHex))
 					.filter((neighbourHex) => neighbourHex.entity === null)
 					.forEach((neighbourHex) => potentialSpawn.push(neighbourHex)),
 			)
@@ -96,7 +85,7 @@ export default class TreeUtils {
 			.filter((hex) => hex.hasTree())
 			.forEach((hex) =>
 				HexUtils.neighbourHexs(world, hex)
-					.filter((neighbourHex) => !this.isHexCoastal(world, neighbourHex))
+					.filter((neighbourHex) => !HexUtils.isHexCoastal(world, neighbourHex))
 					.filter((neighbourHex) => neighbourHex.entity === null)
 					.forEach((neighbourHex) => potentialSpawn.push(neighbourHex)),
 			)

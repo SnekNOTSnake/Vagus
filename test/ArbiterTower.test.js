@@ -1,4 +1,5 @@
 import expect from 'expect'
+import { TOWER_PRICE } from '../src/constants/variables'
 import Arbiter from '../src/engine/Arbiter'
 import Hex from '../src/engine/Hex'
 import Unit from '../src/engine/Unit'
@@ -64,7 +65,7 @@ describe('ArbiterTower', () => {
 			arbiter.buyTowerForHex(hex1)
 
 			expect(world.getEntityAt(hex1)).toBeInstanceOf(Tower)
-			expect(kingdom.gold).toBe(lastKingdomGold - Arbiter.TOWER_PRICE)
+			expect(kingdom.gold).toBe(lastKingdomGold - TOWER_PRICE)
 		})
 
 		it('Cannot buy tower targeting enemy hex or non-empty hex', () => {

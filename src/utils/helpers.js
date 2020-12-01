@@ -1,9 +1,10 @@
-import Arbiter from '../../engine/Arbiter'
-import HexUtils from '../../engine/HexUtils'
+import { UNIT_MAX_LEVEL } from '../constants/variables'
+import HexUtils from '../engine/HexUtils'
 
 /**
- * @typedef {import('../../engine/World').default} World
- * @typedef {import('../../engine/Hex').default} Hex
+ * @typedef {import('../engine/World').default} World
+ * @typedef {import('../engine/Hex').default} Hex
+ * @typedef {import('../engine/Kingdom').default} Kingdom
  * @typedef {Number} Level
  */
 
@@ -34,7 +35,7 @@ export const generateMoveZone = (world, kingdom, level) => {
 	const validInsideKingdomMoves = kingdom.hexs
 		.filter((hex) => !hex.hasTower() && !hex.hasCapital())
 		.filter((hex) =>
-			hex.hasUnit() ? hex.entity.level + level < Arbiter.UNIT_MAX_LEVEL : true,
+			hex.hasUnit() ? hex.entity.level + level <= UNIT_MAX_LEVEL : true,
 		)
 
 	const validAdjacentHexsMoves = adjacentHexs.filter(
@@ -53,6 +54,18 @@ export const generateMoveZoneForTower = (kingdom) => {
 	)
 
 	return validInsideKingdomMoves
+}
+
+/**
+ * @param {Kingdom} kingdom
+ * @param {Level} level
+ */
+export const generateMoveZoneInsideKingdom = (kingdom, level) => {
+	return kingdom.hexs
+		.filter((hex) => !hex.hasTower() && !hex.hasCapital())
+		.filter((hex) =>
+			hex.hasUnit() ? hex.entity.level + level <= UNIT_MAX_LEVEL : true,
+		)
 }
 
 /**

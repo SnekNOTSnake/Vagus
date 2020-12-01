@@ -1,10 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Hexagon } from 'react-hexgrid'
+import { HEX_SIZE } from '../../constants/variables'
 import HexUtils from '../../engine/HexUtils'
 import Themes from '../../themes/Themes'
-
-const HEX_SIZE = 20
 
 /**
  * @typedef { import('../../engine/Hex').default } Hex

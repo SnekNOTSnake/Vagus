@@ -19,6 +19,7 @@ import gold25 from './images/gold/gold-25.svg'
 import gold50 from './images/gold/gold-50.svg'
 import gold100 from './images/gold/gold-100.svg'
 
+import { TREE_CONTINENTAL } from '../constants/variables'
 import Capital from '../engine/Capital'
 import Grave from '../engine/Grave'
 import Tower from '../engine/Tower'
@@ -36,7 +37,7 @@ export default class Themes {
 	static getImageFor(entity) {
 		switch (true) {
 			case entity instanceof Tree:
-				if (entity.type === Tree.CONTINENTAL)
+				if (entity.type === TREE_CONTINENTAL)
 					return this.trees.continental[entity.id % 3]
 				return this.trees.coastal[entity.id % 3]
 

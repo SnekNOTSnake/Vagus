@@ -1,10 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { HexGrid, Layout } from 'react-hexgrid'
+import { HEX_SIZE, HEX_PADDING } from '../../constants/variables'
 import HexCell from './HexCell'
 import KingdomDefense from './KingdomDefense'
 import MoveZone from './MoveZone'
-import { createViewBox } from '../utils/helpers'
+import { createViewBox } from '../../utils/helpers'
 import Arbiter from '../../engine/Arbiter'
 
 /**
@@ -12,9 +13,6 @@ import Arbiter from '../../engine/Arbiter'
  * @typedef {import('../../engine/HexUtils.js').default} HexUtils
  * @typedef {import('../../engine/Arbiter.js').default} Arbiter
  */
-
-const HEX_SIZE = 20
-const HEX_PADDING = 10
 
 const layout = new Layout()
 layout.size = { x: HEX_SIZE, y: HEX_SIZE }

@@ -5,7 +5,7 @@ import {
 	generateSimpleMoveZone,
 	generateMoveZone,
 	generateMoveZoneForTower,
-} from '../utils/helpers'
+} from '../../utils/helpers'
 import Unit from '../../engine/Unit'
 import Tower from '../../engine/Tower'
 
