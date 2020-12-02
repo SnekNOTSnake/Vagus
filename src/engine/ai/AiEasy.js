@@ -1,5 +1,5 @@
 import ArtificialIntelligence from './ArtificialIntelligence'
-import { generateSimpleMoveZone } from '../../utils/helpers'
+import { generateMoveZone } from '../../utils/helpers'
 import {
 	UNIT_MAX_LEVEL,
 	UNIT_PRICE,
@@ -37,17 +37,20 @@ export default class AiEasy extends ArtificialIntelligence {
 			return
 		}
 
-		if (this.cleanCoastalTrees(arbiter, hex)) return
-		if (this.cleanContinentalTrees(arbiter, hex)) return
-
-		const moveZone = generateSimpleMoveZone(
+		const moveZone = generateMoveZone(
 			arbiter.world,
 			hex,
 			hex.entity.level,
 			UNIT_MOVE_STEPS,
-		).filter((moveHex) => moveHex !== hex)
+		)
+		if (this.cleanCoastalTrees(arbiter, moveZone, hex)) return
+		if (this.cleanContinentalTrees(arbiter, moveZone, hex)) return
 
-		const target = moveZone[Math.floor(Math.random() * moveZone.length)]
+		const attackables = moveZone.filter(
+			(moveHex) => moveHex.kingdom !== hex.kingdom,
+		)
+
+		const target = attackables[Math.floor(Math.random() * attackables.length)]
 		if (!target) return
 
 		arbiter.moveUnit(hex, target)

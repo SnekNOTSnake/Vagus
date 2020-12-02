@@ -9,7 +9,11 @@ import {
 import Player from '../Player'
 import HexUtils from '../HexUtils'
 import Unit from '../Unit'
-import { generateSimpleMoveZone } from '../../utils/helpers'
+import {
+	generateMoveZone,
+	generateMoveZoneInsideKingdom,
+	generateSimpleMoveZone,
+} from '../../utils/helpers'
 
 /**
  * @typedef {Number} Color
@@ -79,18 +83,22 @@ export default class ArtificialIntelligence extends Player {
 	decideAboutUnit(arbiter, hex) {
 		const { level } = hex.entity
 
-		// Cleaning coastal trees is the top-most priority
-		if (level <= 2 && this.cleanCoastalTrees(arbiter, hex)) return
-
-		// Cleaning continental trees are the next priority
-		if (level <= 1 && this.cleanContinentalTrees(arbiter, hex)) return
-
-		// Attack something
-		const attackableHexs = generateSimpleMoveZone(
+		const moveZone = generateMoveZone(
 			arbiter.world,
 			hex,
-			level,
+			hex.entity.level,
 			UNIT_MOVE_STEPS,
+		)
+
+		// Cleaning coastal trees is the top-most priority
+		if (level <= 2 && this.cleanCoastalTrees(arbiter, moveZone, hex)) return
+
+		// Cleaning continental trees are the next priority
+		if (level <= 1 && this.cleanContinentalTrees(arbiter, moveZone, hex)) return
+
+		// Attack something
+		const attackableHexs = moveZone.filter(
+			(moveHex) => moveHex.player !== hex.player,
 		)
 		if (attackableHexs.length > 0) {
 			const hexTarget = this.findMostAttractiveHex(
@@ -105,22 +113,23 @@ export default class ArtificialIntelligence extends Player {
 
 		// If nothing to attack or clean, improve defense
 		if (HexUtils.isHexInPerimeter(arbiter.world, hex)) return
-		this.pushUnitToBetterDefense(arbiter, hex)
+		this.pushUnitToBetterDefense(arbiter, moveZone, hex.kingdom)
 	}
 
 	/**
 	 * @param {Arbiter} arbiter
-	 * @param {Hex} hex
+	 * @param {Hex[]} moveZone
+	 * @param {Kingdom} kingdom
 	 */
-	pushUnitToBetterDefense(arbiter, hex) {
-		hex.kingdom.hexs.some((kingdomHex) => {
+	pushUnitToBetterDefense(arbiter, moveZone, kingdom) {
+		moveZone.some((kingdomHex) => {
 			const numberOfAdjacentEnemyHexs = HexUtils.neighbourHexs(
 				arbiter.world,
 				kingdomHex,
-			).filter((neighbourHex) => neighbourHex.player !== hex.player).length
+			).filter((neighbourHex) => neighbourHex.kingdom !== kingdom).length
 
 			if (
-				kingdomHex.player === hex.player &&
+				kingdomHex.kingdom === kingdom &&
 				kingdomHex.entity === null &&
 				numberOfAdjacentEnemyHexs === 0
 			) {
@@ -214,12 +223,13 @@ export default class ArtificialIntelligence extends Player {
 	 * Returns true if a coastal tree was cleaned
 	 *
 	 * @param {Arbiter} arbiter
+	 * @param {Hex[]} moveZone
 	 * @param {Hex} hex
 	 *
 	 * @returns {Boolean}
 	 */
-	cleanCoastalTrees(arbiter, hex) {
-		const coastalTreeHexs = hex.kingdom.hexs
+	cleanCoastalTrees(arbiter, moveZone, hex) {
+		const coastalTreeHexs = moveZone
 			.filter((kingdomHex) => kingdomHex.hasTree())
 			.filter((kingdomHex) => kingdomHex.entity.type === TREE_COASTAL)
 
@@ -235,12 +245,13 @@ export default class ArtificialIntelligence extends Player {
 	 * Returns true if a continental tree was cleaned
 	 *
 	 * @param {Arbiter} arbiter
+	 * @param {Hex[]} moveZone
 	 * @param {Hex} hex
 	 *
 	 * @returns {Boolean}
 	 */
-	cleanContinentalTrees(arbiter, hex) {
-		const continentalTreeHexs = hex.kingdom.hexs
+	cleanContinentalTrees(arbiter, moveZone, hex) {
+		const continentalTreeHexs = moveZone
 			.filter((kingdomHex) => kingdomHex.hasTree())
 			.filter((kingdomHex) => kingdomHex.entity.type === TREE_CONTINENTAL)
 
@@ -277,13 +288,14 @@ export default class ArtificialIntelligence extends Player {
 	 * @param {Hex} hex
 	 */
 	tryToMergeWithSomeone(arbiter, hex) {
-		const mergableHexs = hex.kingdom.hexs
-			.filter((kingdomHex) => kingdomHex.hasUnit())
-			.filter(
-				(kingdomHex) =>
-					kingdomHex.entity.level + kingdomHex.entity.level <= UNIT_MAX_LEVEL,
-			)
-			.filter((kingdomHex) => kingdomHex !== hex)
+		const moveZone = generateMoveZoneInsideKingdom(
+			arbiter.world,
+			hex,
+			hex.entity.level,
+			UNIT_MOVE_STEPS,
+		)
+
+		const mergableHexs = moveZone.filter((kingdomHex) => kingdomHex.hasUnit())
 
 		mergableHexs.some((mergableHex) => {
 			if (!this.mergableCondition(hex, mergableHex)) return false

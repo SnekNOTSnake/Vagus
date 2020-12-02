@@ -1,5 +1,8 @@
 import expect from 'expect'
-import { generateSimpleMoveZone } from '../../src/utils/helpers'
+import {
+	generateMoveZone,
+	generateSimpleMoveZone,
+} from '../../src/utils/helpers'
 import { generateTestingWorld } from '../testUtils'
 import Hex from '../../src/engine/Hex'
 import Arbiter from '../../src/engine/Arbiter'
@@ -10,6 +13,7 @@ import Unit from '../../src/engine/Unit'
 import Tree from '../../src/engine/Tree'
 import Tower from '../../src/engine/Tower'
 import Grave from '../../src/engine/Grave'
+import { UNIT_MOVE_STEPS } from '../../src/constants/variables'
 
 const players = [
 	new AiTest(), // Blue (0)
@@ -30,11 +34,17 @@ describe('ArtificialIntelligence', () => {
 			const hex3 = new Hex(2, -3, 1)
 			const unit1 = new Unit(1)
 			const ai = arbiter.currentPlayer
+			const moveZone = generateMoveZone(
+				world,
+				world.getHexAt(hex1),
+				1,
+				UNIT_MOVE_STEPS,
+			)
 
 			world.setEntityAt(hex1, unit1)
 			TreeUtils.spawnTreeOnWorldHex(world, world.getHexAt(hex2))
 			TreeUtils.spawnTreeOnWorldHex(world, world.getHexAt(hex3))
-			ai.cleanCoastalTrees(arbiter, world.getHexAt(hex1))
+			ai.cleanCoastalTrees(arbiter, moveZone, world.getHexAt(hex1))
 
 			expect(world.getEntityAt(hex1)).toBeNull()
 			expect(world.getEntityAt(hex2)).toBe(unit1)
@@ -51,11 +61,17 @@ describe('ArtificialIntelligence', () => {
 			const hex3 = new Hex(0, -4, 4)
 			const unit1 = new Unit(1)
 			const ai = arbiter.currentPlayer
+			const moveZone = generateMoveZone(
+				world,
+				world.getHexAt(hex1),
+				1,
+				UNIT_MOVE_STEPS,
+			)
 
 			world.setEntityAt(hex1, unit1)
 			TreeUtils.spawnTreeOnWorldHex(world, world.getHexAt(hex2))
 			TreeUtils.spawnTreeOnWorldHex(world, world.getHexAt(hex3))
-			ai.cleanContinentalTrees(arbiter, world.getHexAt(hex1))
+			ai.cleanContinentalTrees(arbiter, moveZone, world.getHexAt(hex1))
 
 			expect(world.getEntityAt(hex1)).toBeNull()
 			expect(world.getEntityAt(hex2)).toBe(unit1)
