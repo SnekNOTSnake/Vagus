@@ -1,11 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Hexagon } from 'react-hexgrid'
-import {
-	generateSimpleMoveZone,
-	generateMoveZone,
-	generateMoveZoneForTower,
-} from '../../utils/helpers'
+import { generateMoveZone, generateMoveZoneForTower } from '../../utils/helpers'
 import { HEX_PADDING, UNIT_MOVE_STEPS } from '../../constants/variables'
 import Unit from '../../engine/Unit'
 import Tower from '../../engine/Tower'
@@ -29,7 +25,7 @@ const MoveZone = ({ world, kingdom, selection }) => {
 		if (selection instanceof Tower) return generateMoveZoneForTower(kingdom)
 
 		// Move unit
-		return generateSimpleMoveZone(
+		return generateMoveZone(
 			world,
 			selection,
 			selection.entity.level,
