@@ -90,11 +90,9 @@ export default class ArtificialIntelligence extends Player {
 			UNIT_MOVE_STEPS,
 		)
 
-		// Cleaning coastal trees is the top-most priority
+		// Cleaning coastal trees is the top-most priority or continental
 		if (level <= 2 && this.cleanCoastalTrees(arbiter, moveZone, hex)) return
-
-		// Cleaning continental trees are the next priority
-		if (level <= 1 && this.cleanContinentalTrees(arbiter, moveZone, hex)) return
+		if (level <= 2 && this.cleanContinentalTrees(arbiter, moveZone, hex)) return
 
 		// Attack something
 		const attackableHexs = moveZone.filter(
@@ -111,33 +109,27 @@ export default class ArtificialIntelligence extends Player {
 			return
 		}
 
-		// If nothing to attack or clean, improve defense
+		// If nothing to attack or clean, cut trees or improve defense
 		if (HexUtils.isHexInPerimeter(arbiter.world, hex)) return
-		this.pushUnitToBetterDefense(arbiter, moveZone, hex.kingdom)
+		if (this.cleanCoastalTrees(arbiter, moveZone, hex)) return
+		if (this.cleanContinentalTrees(arbiter, moveZone, hex)) return
+		this.pushUnitToBetterDefense(arbiter, moveZone, hex)
 	}
 
 	/**
+	 * Run arounds!
+	 * it's just the default though, it can be improved along with difficulties!
+	 *
 	 * @param {Arbiter} arbiter
 	 * @param {Hex[]} moveZone
-	 * @param {Kingdom} kingdom
+	 * @param {Hex} hex
 	 */
-	pushUnitToBetterDefense(arbiter, moveZone, kingdom) {
-		moveZone.some((kingdomHex) => {
-			const numberOfAdjacentEnemyHexs = HexUtils.neighbourHexs(
-				arbiter.world,
-				kingdomHex,
-			).filter((neighbourHex) => neighbourHex.kingdom !== kingdom).length
+	pushUnitToBetterDefense(arbiter, moveZone, hex) {
+		const emptyHexs = moveZone.filter((moveHex) => moveHex.entity === null)
+		const randomEmptyHex =
+			emptyHexs[Math.floor(Math.random() * emptyHexs.length)]
 
-			if (
-				kingdomHex.kingdom === kingdom &&
-				kingdomHex.entity === null &&
-				numberOfAdjacentEnemyHexs === 0
-			) {
-				return true
-			}
-
-			return false
-		})
+		if (randomEmptyHex) arbiter.moveUnit(hex, randomEmptyHex)
 	}
 
 	/**
