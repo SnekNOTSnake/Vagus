@@ -6,6 +6,7 @@ import {
 	generateMoveZone,
 	generateMoveZoneForTower,
 } from '../../utils/helpers'
+import { HEX_PADDING } from '../../constants/variables'
 import Unit from '../../engine/Unit'
 import Tower from '../../engine/Tower'
 
@@ -31,11 +32,7 @@ const MoveZone = ({ world, kingdom, selection }) => {
 	return (
 		<g
 			className="MoveZone"
-			style={{
-				pointerEvents: 'none',
-				transform: 'translate(10px, 10px)',
-				fill: 'transparent',
-			}}
+			transform={`translate(${HEX_PADDING} ${HEX_PADDING})`}
 		>
 			{moveZone.map((hex) => (
 				<Hexagon key={hex.hash} q={hex.q} r={hex.r} s={hex.s}>

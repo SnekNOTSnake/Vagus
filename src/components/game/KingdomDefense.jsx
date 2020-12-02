@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Hexagon } from 'react-hexgrid'
-import { HEX_SIZE } from '../../constants/variables'
+import { HEX_SIZE, HEX_PADDING } from '../../constants/variables'
 import HexUtils from '../../engine/HexUtils'
 import Themes from '../../themes/Themes'
 
@@ -51,7 +51,7 @@ const ProtectedHexs = ({ hex, world, layout }) => {
 	}, [hex, layout, world])
 
 	return (
-		<g transform="translate(10 10)">
+		<g transform={`translate(${HEX_PADDING} ${HEX_PADDING})`}>
 			{shields.map((shield, i) => (
 				<g
 					// eslint-disable-next-line react/no-array-index-key

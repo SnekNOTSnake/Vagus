@@ -70,6 +70,12 @@
 	z-index: 200;
 }
 
+/* Move Zone */
+.Game .MoveZone {
+	pointer-events: none;
+	fill: rgba(255, 255, 255, 0.25);
+}
+
 /* Common menu */
 .Game .KingdomMenu .stats .gold h2 img {
 	width: 40px;
