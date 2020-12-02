@@ -28,6 +28,25 @@ describe('Arbiter', () => {
 			expect(world.getEntityAt(hex2)).toBe(unit)
 		})
 
+		it('Should break when trying to move a unit outside move zone', () => {
+			const world = generateTestingWorld('constant-seed-5')
+			const hex1 = new Hex(-2, 2, 0)
+			const hex2 = new Hex(3, -3, 0)
+			const unit = new Unit()
+			const arbiter = new Arbiter(world)
+			const kingdom = world.getKingdomAt(hex1)
+
+			world.setEntityAt(hex1, unit)
+			arbiter.setCurrentPlayer(kingdom.player)
+
+			expect(world.getEntityAt(hex2)).toBeNull()
+			expect(() => arbiter.moveUnit(hex1, hex2)).toThrow(
+				/Trying to move a unit towards outside moveZone/i,
+			)
+			expect(world.getEntityAt(hex1)).toBe(unit)
+			expect(world.getEntityAt(hex2)).toBeNull()
+		})
+
 		it('Should break when trying to move a unit across owned kingdoms', () => {
 			const world = generateTestingWorld('constant-seed-5')
 			const hex1 = new Hex(-2, -2, 4)
@@ -41,7 +60,7 @@ describe('Arbiter', () => {
 
 			expect(world.getEntityAt(hex2)).toBeNull()
 			expect(() => arbiter.moveUnit(hex1, hex2)).toThrow(
-				/Trying to move a unit across owned kingdoms/i,
+				/Trying to move a unit/i,
 			)
 			expect(world.getEntityAt(hex1)).toBe(unit)
 			expect(world.getEntityAt(hex2)).toBeNull()
@@ -59,7 +78,7 @@ describe('Arbiter', () => {
 			arbiter.setCurrentPlayer(kingdom1.player)
 
 			expect(() => arbiter.moveUnit(hex2, hex1)).toThrow(
-				/Trying to move a unit but it's not their turn/i,
+				/Trying to move a unit/i,
 			)
 			expect(world.getEntityAt(hex2)).toBe(unit)
 			expect(world.getEntityAt(hex1)).toBeNull()
@@ -122,7 +141,7 @@ describe('Arbiter', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 
 			expect(() => arbiter.moveUnit(hex1, hex2)).toThrow(
-				/Trying to capture a hex but hex is not adjacent to kingdom/i,
+				/Trying to move a unit/i,
 			)
 			expect(world.getEntityAt(hex1)).toBe(unit)
 			expect(world.getEntityAt(hex1).played).toBe(false)
@@ -199,7 +218,7 @@ describe('Arbiter', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 
 			expect(() => arbiter.moveUnit(hex1, hex2)).toThrow(
-				/Trying to capture a hex but it has an equal or higher level of protection/i,
+				/Trying to move a unit/i,
 			)
 			expect(world.getEntityAt(hex1)).toBe(unit1)
 			expect(world.getEntityAt(hex2)).toBe(unit2)
@@ -226,7 +245,7 @@ describe('Arbiter', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 
 			expect(() => arbiter.moveUnit(hex1, hex2)).toThrow(
-				/Trying to capture a hex but it has an equal or higher level of protection/i,
+				/Trying to move a unit/i,
 			)
 			expect(world.getEntityAt(hex1)).toBe(unit1)
 			expect(world.getEntityAt(hex2)).toBe(unit2)
@@ -305,7 +324,7 @@ describe('Arbiter', () => {
 			expect(world.getHexAt(subKingdomHex2).kingdom).toBeNull()
 		})
 
-		it('Doesn\'t mark a unit as "played" if it only moves into empty hex inside kingdom', () => {
+		it('Marks a unit as "played" even if it only moves into empty hex inside kingdom', () => {
 			const world = generateTestingWorld('constant-seed-5')
 			const arbiter = new Arbiter(world)
 			const hex1 = new Hex(-1, 0, 1)
@@ -319,7 +338,7 @@ describe('Arbiter', () => {
 
 			expect(world.getEntityAt(hex1)).toBeNull()
 			expect(world.getEntityAt(hex2)).toBe(unit1)
-			expect(world.getEntityAt(hex2).played).toBe(false)
+			expect(world.getEntityAt(hex2).played).toBe(true)
 		})
 	})
 
@@ -535,115 +554,4 @@ describe('Arbiter', () => {
 			expect(kingdom.getOutcome()).toBe(0)
 		})
 	})
-
-	/*
-	describe('smartAction', () => {
-		it('Selects kingdom AND takes unit when clicking on a unit in another kingdom, and not only selects kingdom', () => {
-			const world = generateTestingWorld('constant-seed-5')
-			const arbiter = new Arbiter(world)
-			const hex1 = new Hex(-1, -3, 4)
-			const hex2 = new Hex(2, -1, -1)
-			const unit1 = new Unit()
-			const kingdom1 = world.getKingdomAt(hex1)
-			const kingdom2 = world.getKingdomAt(hex2)
-
-			arbiter.setCurrentPlayer(kingdom1.player)
-			arbiter.setCurrentKingdom(kingdom1)
-			world.setEntityAt(hex2, unit1)
-			arbiter.smartAction(hex2)
-
-			expect(arbiter.currentKingdom).toBe(kingdom2)
-			expect(arbiter.selection).toBe(unit1)
-			expect(world.getEntityAt(hex2)).toBeNull()
-		})
-
-		it('Moves a unit in kingdom', () => {
-			const world = generateTestingWorld('constant-seed-5')
-			const arbiter = new Arbiter(world)
-			const hex1 = new Hex(2, -1, -1)
-			const hex2 = new Hex(3, 0, -3)
-			const unit1 = new Unit()
-			const kingdom = world.getKingdomAt(hex1)
-
-			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
-			world.setEntityAt(hex1, unit1)
-			arbiter.smartAction(hex1)
-			expect(arbiter.selection).toBe(unit1)
-			expect(world.getEntityAt(hex1)).toBeNull()
-
-			arbiter.smartAction(hex2)
-			expect(arbiter.selection).toBeNull()
-			expect(world.getEntityAt(hex2)).toBe(unit1)
-			expect(world.getEntityAt(hex2).played).toBe(false)
-		})
-
-		it('Captures a hex', () => {
-			const world = generateTestingWorld('constant-seed-5')
-			const arbiter = new Arbiter(world)
-			const hex1 = new Hex(2, -1, -1)
-			const hex2 = new Hex(2, 1, -3)
-			const unit1 = new Unit()
-			const kingdom = world.getKingdomAt(hex1)
-
-			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
-			world.setEntityAt(hex1, unit1)
-			arbiter.smartAction(hex1)
-			arbiter.smartAction(hex2)
-
-			expect(world.getHexAt(hex2).kingdom).toBe(kingdom)
-			expect(world.getHexAt(hex2).player).toBe(arbiter.currentPlayer)
-			expect(kingdom.hexs.includes(world.getHexAt(hex2))).toBe(true)
-			expect(arbiter.selection).toBeNull()
-			expect(world.getEntityAt(hex2)).toBe(unit1)
-			expect(world.getEntityAt(hex2).played).toBe(true)
-		})
-
-		it('Can capture a hex from an opponent kingdom', () => {
-			const world = generateTestingWorld('constant-seed-5')
-			const arbiter = new Arbiter(world)
-			const hex1 = new Hex(2, -1, -1)
-			const hex2 = new Hex(1, -1, 0)
-			const unit1 = new Unit()
-			const kingdom = world.getKingdomAt(hex1)
-
-			arbiter.setCurrentPlayer(kingdom.player)
-			arbiter.setCurrentKingdom(kingdom)
-			world.setEntityAt(hex1, unit1)
-			arbiter.smartAction(hex1)
-			arbiter.smartAction(hex2)
-
-			expect(world.getHexAt(hex2).kingdom).toBe(kingdom)
-			expect(world.getHexAt(hex2).player).toBe(arbiter.currentPlayer)
-			expect(kingdom.hexs.includes(world.getHexAt(hex2))).toBe(true)
-			expect(arbiter.selection).toBeNull()
-			expect(world.getEntityAt(hex2)).toBe(unit1)
-			expect(world.getEntityAt(hex2).played).toBe(true)
-		})
-
-		it('Selects kingdom even if I click on a hex with an unit that has already moved this turn', () => {
-			const world = generateTestingWorld('constant-seed-5')
-			const arbiter = new Arbiter(world)
-			const hex1 = new Hex(2, -1, -1)
-			const hex2 = new Hex(-1, -3, 4)
-			const unit1 = new Unit()
-			unit1.setPlayed(true)
-			const kingdom1 = world.getKingdomAt(hex1)
-			const kingdom2 = world.getKingdomAt(hex2)
-
-			arbiter.setCurrentPlayer(kingdom1.player)
-			arbiter.setCurrentKingdom(kingdom1)
-			world.setEntityAt(hex2, unit1)
-			arbiter.smartAction(hex2)
-
-			expect(arbiter.currentKingdom).toBe(kingdom2)
-			expect(arbiter.selection).toBe(null)
-			expect(world.getEntityAt(hex2)).toBe(unit1)
-			expect(world.getEntityAt(hex2).played).toBe(true)
-			expect(() => arbiter.smartAction(hex2)).toThrow(
-				/Attempting to take a unit but it has been played/i,
-			)
-		})
-	}) */
 })

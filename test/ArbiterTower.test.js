@@ -23,7 +23,7 @@ describe('ArbiterTower', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 
 			expect(() => arbiter.moveUnit(hex1, hex2)).toThrow(
-				/Trying to place unit in a hex reserved by a tower or capital/i,
+				/Trying to move a unit/i,
 			)
 			expect(world.getEntityAt(hex2)).toBe(tower1)
 			expect(world.getEntityAt(hex1)).toBe(unit1)
@@ -44,7 +44,7 @@ describe('ArbiterTower', () => {
 			arbiter.setCurrentPlayer(kingdom.player)
 
 			expect(() => arbiter.moveUnit(hex1, hex2)).toThrow(
-				/Trying to capture a hex but it has an equal or higher level of protection/i,
+				/Trying to move a unit/i,
 			)
 			expect(world.getEntityAt(hex1)).toBe(unit1)
 			expect(world.getKingdomAt(hex2)).toBe(opponentKingdom)

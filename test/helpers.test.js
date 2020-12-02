@@ -17,17 +17,36 @@ describe('Helpers', () => {
 		it('Should generate a move zone only for the adjacent hexs', () => {
 			const world = generateTestingWorld('constant-seed-7')
 			const hex1 = new Hex(2, -2, 0)
-			const kingdom = world.getKingdomAt(hex1)
 
-			expect(generateSimpleMoveZone(world, kingdom, 1).length).toBe(5)
+			expect(
+				generateSimpleMoveZone(world, world.getHexAt(hex1), 1).length,
+			).toBe(5)
 		})
 
-		it('Should generate a adjacent move zone with proper level', () => {
+		it('Should generate an adjacent move zone with proper level', () => {
+			const world = generateTestingWorld('constant-seed-7')
+			const hex1 = new Hex(2, -2, 0)
+
+			expect(
+				generateSimpleMoveZone(world, world.getHexAt(hex1), 4).length,
+			).toBe(10)
+		})
+
+		it('Should generate an adjacent move zone with proper steps ', () => {
+			const world = generateTestingWorld('constant-seed-7')
+			const hex1 = new Hex(2, -2, 0)
+
+			expect(
+				generateSimpleMoveZone(world, world.getHexAt(hex1), 1, 2).length,
+			).toBe(4)
+		})
+
+		it('Should be able to also generate move zone for bought unit', () => {
 			const world = generateTestingWorld('constant-seed-7')
 			const hex1 = new Hex(2, -2, 0)
 			const kingdom = world.getKingdomAt(hex1)
 
-			expect(generateSimpleMoveZone(world, kingdom, 4).length).toBe(10)
+			expect(generateSimpleMoveZone(world, kingdom, 1).length).toBe(5)
 		})
 	})
 
@@ -35,9 +54,8 @@ describe('Helpers', () => {
 		it('Should generate a move zone both adjacent and inside kingdom', () => {
 			const world = generateTestingWorld('constant-seed-7')
 			const hex1 = new Hex(2, -2, 0)
-			const kingdom = world.getKingdomAt(hex1)
 
-			expect(generateMoveZone(world, kingdom, 1).length).toBe(10)
+			expect(generateMoveZone(world, world.getHexAt(hex1), 1).length).toBe(9)
 		})
 
 		it('Should generate a move zone both adjacent and inside kingdom with proper level', () => {
@@ -48,13 +66,27 @@ describe('Helpers', () => {
 			const unit1 = new Unit(4)
 			const unit2 = new Unit(4)
 			const unit3 = new Unit(3)
-			const kingdom = world.getKingdomAt(hex1)
 
 			world.setEntityAt(world.getHexAt(hex1), unit1)
 			world.setEntityAt(world.getHexAt(hex2), unit2)
 			world.setEntityAt(world.getHexAt(hex3), unit3)
 
-			expect(generateMoveZone(world, kingdom, 1).length).toBe(8)
+			expect(generateMoveZone(world, world.getHexAt(hex1), 1).length).toBe(8)
+		})
+
+		it('Should generate a move zone both adjacent and inside kingdom with proper steps', () => {
+			const world = generateTestingWorld('constant-seed-7')
+			const hex1 = new Hex(2, -2, 0)
+
+			expect(generateMoveZone(world, world.getHexAt(hex1), 1, 2).length).toBe(6)
+		})
+
+		it('Should be able to also generate move zone for bought unit', () => {
+			const world = generateTestingWorld('constant-seed-7')
+			const hex1 = new Hex(2, -2, 0)
+			const kingdom = world.getKingdomAt(hex1)
+
+			expect(generateMoveZone(world, kingdom, 1).length).toBe(10)
 		})
 	})
 
@@ -90,6 +122,50 @@ describe('Helpers', () => {
 			const hex3 = new Hex(2, -4, 2)
 			const hex4 = new Hex(0, -3, 3)
 			const tower1 = new Tower()
+			const unit1 = new Unit(1)
+			const unit2 = new Unit(2)
+			const grave1 = new Grave()
+
+			world.setEntityAt(hex1, unit1)
+			world.setEntityAt(hex2, tower1)
+			world.setEntityAt(hex3, unit2)
+			world.setEntityAt(hex4, grave1)
+			TreeUtils.spawnTreeOnWorldHex(world, world.getHexAt(hex1))
+
+			expect(
+				generateMoveZoneInsideKingdom(world, world.getHexAt(hex1), 1).length,
+			).toBe(3)
+		})
+
+		it('Should generate a move zone with proper steps', () => {
+			const world = generateTestingWorld('constant-seed-7')
+			const hex1 = new Hex(2, -2, 0)
+			const hex2 = new Hex(2, -3, 1)
+			const hex3 = new Hex(2, -4, 2)
+			const hex4 = new Hex(0, -3, 3)
+			const tower1 = new Tower()
+			const unit1 = new Unit(1)
+			const unit2 = new Unit(2)
+			const grave1 = new Grave()
+
+			world.setEntityAt(hex1, unit1)
+			world.setEntityAt(hex2, tower1)
+			world.setEntityAt(hex3, unit2)
+			world.setEntityAt(hex4, grave1)
+			TreeUtils.spawnTreeOnWorldHex(world, world.getHexAt(hex1))
+
+			expect(
+				generateMoveZoneInsideKingdom(world, world.getHexAt(hex1), 1, 2).length,
+			).toBe(1)
+		})
+
+		it('Should be able to also generate move zone for bought unit', () => {
+			const world = generateTestingWorld('constant-seed-7')
+			const hex1 = new Hex(2, -2, 0)
+			const hex2 = new Hex(2, -3, 1)
+			const hex3 = new Hex(2, -4, 2)
+			const hex4 = new Hex(0, -3, 3)
+			const tower1 = new Tower()
 			const unit1 = new Unit(2)
 			const grave1 = new Grave()
 			const kingdom = world.getKingdomAt(hex1)
@@ -99,7 +175,7 @@ describe('Helpers', () => {
 			world.setEntityAt(hex4, grave1)
 			TreeUtils.spawnTreeOnWorldHex(world, world.getHexAt(hex1))
 
-			expect(generateMoveZoneInsideKingdom(kingdom, 2).length).toBe(4)
+			expect(generateMoveZoneInsideKingdom(world, kingdom, 2).length).toBe(4)
 		})
 	})
 })

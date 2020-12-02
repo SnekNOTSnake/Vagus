@@ -10,8 +10,10 @@ import {
 	UNIT_MAX_LEVEL,
 	TOWER_PRICE,
 	CUT_KINGDOM_TREE_GOLD_GAIN,
+	UNIT_MOVE_STEPS,
 } from '../constants/variables'
 import Tree from './Tree'
+import { generateMoveZone } from '../utils/helpers'
 
 /**
  * @typedef {import('./World').default} World
@@ -269,6 +271,12 @@ export default class Arbiter {
 		const fromHex = this.world.getHexAt(from)
 		const toHex = this.world.getHexAt(to)
 		const isCapturing = fromHex.kingdom !== toHex.kingdom
+		const moveZone = generateMoveZone(
+			this.world,
+			fromHex,
+			fromHex.entity.level,
+			UNIT_MOVE_STEPS,
+		)
 
 		if (fromHex.player !== this.currentPlayer)
 			throw new Error("Trying to move a unit but it's not their turn")
@@ -276,8 +284,8 @@ export default class Arbiter {
 		if (fromHex.getUnit().played)
 			throw new Error('Trying to take a unit but it has been played')
 
-		if (fromHex.kingdom !== toHex.kingdom && fromHex.player === toHex.player)
-			throw new Error('Trying to move a unit across owned kingdoms')
+		if (!moveZone.includes(toHex))
+			throw new Error('Trying to move a unit towards outside moveZone')
 
 		const undoCallback = isCapturing
 			? this._placeUnitCapture(fromHex, fromHex.kingdom, toHex)
@@ -425,9 +433,6 @@ export default class Arbiter {
 				to.entity.setLevel(to.entity.level - lastFromEntity.level)
 			})
 		} else {
-			// The hex has tree or grave, mark the unit as `played`
-			if (to.hasTree() || to.hasGrave()) fromEntity.setPlayed(true)
-
 			// Gain gold if hex kingdom has tree
 			if (to.hasTree())
 				to.kingdom.setGold(to.kingdom.gold + CUT_KINGDOM_TREE_GOLD_GAIN)
@@ -435,11 +440,16 @@ export default class Arbiter {
 			const lastFromEntity = fromEntity
 			const lastHexEntity = to.entity
 			to.setEntity(fromEntity)
-			if (!isBoughtUnit) from.setEntity(null)
+			if (!isBoughtUnit) {
+				from.setEntity(null)
+				fromEntity.setPlayed(true)
+			}
 
 			undoCallbacks.push(() => {
-				to.entity.setPlayed(false)
-				if (!isBoughtUnit) from.setEntity(lastFromEntity)
+				if (!isBoughtUnit) {
+					to.entity.setPlayed(false)
+					from.setEntity(lastFromEntity)
+				}
 				if (lastHexEntity instanceof Tree)
 					to.kingdom.setGold(to.kingdom.gold - CUT_KINGDOM_TREE_GOLD_GAIN)
 				to.setEntity(lastHexEntity)

@@ -4,6 +4,7 @@ import {
 	TOWER_PRICE,
 	TREE_COASTAL,
 	TREE_CONTINENTAL,
+	UNIT_MOVE_STEPS,
 } from '../../constants/variables'
 import Player from '../Player'
 import HexUtils from '../HexUtils'
@@ -76,7 +77,6 @@ export default class ArtificialIntelligence extends Player {
 	 * @param {Hex} hex
 	 */
 	decideAboutUnit(arbiter, hex) {
-		const { kingdom } = hex
 		const { level } = hex.entity
 
 		// Cleaning coastal trees is the top-most priority
@@ -86,7 +86,12 @@ export default class ArtificialIntelligence extends Player {
 		if (level <= 1 && this.cleanContinentalTrees(arbiter, hex)) return
 
 		// Attack something
-		const attackableHexs = generateSimpleMoveZone(arbiter.world, kingdom, level)
+		const attackableHexs = generateSimpleMoveZone(
+			arbiter.world,
+			hex,
+			level,
+			UNIT_MOVE_STEPS,
+		)
 		if (attackableHexs.length > 0) {
 			const hexTarget = this.findMostAttractiveHex(
 				arbiter.world,

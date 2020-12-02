@@ -1,7 +1,10 @@
 import ArtificialIntelligence from './ArtificialIntelligence'
 import { generateSimpleMoveZone } from '../../utils/helpers'
-import { UNIT_MAX_LEVEL, UNIT_PRICE } from '../../constants/variables'
-import Arbiter from '../Arbiter'
+import {
+	UNIT_MAX_LEVEL,
+	UNIT_PRICE,
+	UNIT_MOVE_STEPS,
+} from '../../constants/variables'
 
 /**
  * @typedef {import('../Arbiter').default} Arbiter
@@ -39,9 +42,11 @@ export default class AiEasy extends ArtificialIntelligence {
 
 		const moveZone = generateSimpleMoveZone(
 			arbiter.world,
-			hex.kingdom,
+			hex,
 			hex.entity.level,
+			UNIT_MOVE_STEPS,
 		).filter((moveHex) => moveHex !== hex)
+
 		const target = moveZone[Math.floor(Math.random() * moveZone.length)]
 		if (!target) return
 

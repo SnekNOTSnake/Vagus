@@ -6,7 +6,7 @@ import {
 	generateMoveZone,
 	generateMoveZoneForTower,
 } from '../../utils/helpers'
-import { HEX_PADDING } from '../../constants/variables'
+import { HEX_PADDING, UNIT_MOVE_STEPS } from '../../constants/variables'
 import Unit from '../../engine/Unit'
 import Tower from '../../engine/Tower'
 
@@ -21,12 +21,20 @@ import Tower from '../../engine/Tower'
  */
 const MoveZone = ({ world, kingdom, selection }) => {
 	const moveZone = React.useMemo(() => {
+		// Bought unit
 		if (selection instanceof Unit)
 			return generateMoveZone(world, kingdom, selection.level)
 
+		// Bought tower
 		if (selection instanceof Tower) return generateMoveZoneForTower(kingdom)
 
-		return generateSimpleMoveZone(world, kingdom, selection.entity.level)
+		// Move unit
+		return generateSimpleMoveZone(
+			world,
+			selection,
+			selection.entity.level,
+			UNIT_MOVE_STEPS,
+		)
 	}, [world, kingdom, selection])
 
 	return (
