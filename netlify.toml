@@ -1,0 +1,8 @@
+[build]
+base = "/"
+command = "yarn run build"
+publish = "dist"
+
+[[redirects]]
+from = "/*"
+to = "/"
