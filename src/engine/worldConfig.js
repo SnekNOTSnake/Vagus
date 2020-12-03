@@ -37,12 +37,12 @@ const defaults = {
 	/**
 	 * Max probability of spawning coastal tree around a coastal tree
 	 */
-	coastalTreesGrowMaxProbability: 1.0,
+	coastalTreesGrowMaxProbability: 0.75,
 
 	/**
 	 * Max probability of spawning coastal tree around a coastal tree
 	 */
-	continentalTreesGrowMaxProbability: 0.25,
+	continentalTreesGrowMaxProbability: 0.2,
 
 	/**
 	 * 100% means 63% at first turn,
