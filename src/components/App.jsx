@@ -13,7 +13,7 @@ const App = () => {
 	return (
 		<div className={`${style.App} literature`}>
 			<div className="maxWidth">
-				<h1>Slay - Openhex</h1>
+				<h1>Vagus</h1>
 				<div className={style.menu}>
 					<HexGrid width="100%" height="100%" viewBox="-50 -50 100 100">
 						<Layout

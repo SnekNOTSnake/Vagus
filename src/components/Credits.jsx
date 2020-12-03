@@ -18,11 +18,10 @@ const Credits = () => {
 				<section>
 					<h2>Original Work</h2>
 					<p>
-						This project is based on an{' '}
-						<a href="https://github.com/alcalyn/openhex">open-source work</a>{' '}
-						created by <a href="https://github.com/alcalyn">alcalyn</a>. Some of
-						the game rules are also affected by{' '}
-						<a href="https://antiyoy.fandom.com/">Antiyoy</a> game.
+						This project is basically a combination of two works:{' '}
+						<a href="https://antiyoy.fandom.com/">Antiyoy</a> created by yiotro,
+						and <a href="https://github.com/alcalyn/openhex">Openhex</a> created
+						by alcalyn.
 					</p>
 				</section>
 

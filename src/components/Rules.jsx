@@ -101,7 +101,7 @@ const Rules = () => {
 						<li>Buy Unit - A</li>
 						<li>Buy Tower - S</li>
 						<li>Undo - E</li>
-						<li>End Turn - R</li>
+						<li>End Turn - F</li>
 					</ul>
 				</section>
 

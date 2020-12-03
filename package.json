@@ -1,8 +1,9 @@
 {
-  "name": "slay-openhex",
-  "version": "1.0.0",
+  "name": "vagus",
+  "version": "0.1.0",
   "main": "index.js",
-  "license": "MIT",
+	"license": "AGPL-3.0",
+	"homepage": "https://vagus-game.netlify.app/",
   "dependencies": {
     "@hot-loader/react-dom": "^17.0.0",
     "prop-types": "^15.7.2",
@@ -58,5 +59,5 @@
     "test": "mocha",
     "create-stats": "NODE_ENV=production webpack --config webpack.prod.js --json > stats.json",
     "analyze-dependencies": "yarn run create-stats && webpack-bundle-analyzer stats.json"
-  }
+	}
 }

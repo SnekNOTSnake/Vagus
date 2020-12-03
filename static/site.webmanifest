@@ -1,7 +1,7 @@
 {
-    "name": "Slay - Openhex",
-		"short_name": "Slay - Openhex",
-		"description": "HTML5 Slay Game!",
+    "name": "Vagus",
+		"short_name": "Vagus",
+		"description": "React SVG turn based strategy.",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
