@@ -1,6 +1,6 @@
 <h1 align="center">
 	<a href="https://vagus-game.netlify.app">
-		<img src="https://raw.githubusercontent.com/SnekNOTSnake/Vagus/master/img/logo.png" alt="Markdownify" width="200">
+		<img src="https://raw.githubusercontent.com/SnekNOTSnake/Vagus/main/img/logo.png" alt="Markdownify" width="200">
 	</a>
 	<br>
   	Vagus
@@ -27,7 +27,7 @@
   <a href="#test">Tests</a>
 </p>
 
-![gameplay-screenshot](https://raw.githubusercontent.com/SnekNOTSnake/Vagus/master/img/screenshot-1.png)
+![gameplay-screenshot](https://raw.githubusercontent.com/SnekNOTSnake/Vagus/main/img/screenshot-1.png)
 
 ## 🎯️ Motivation
 
