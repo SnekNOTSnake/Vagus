@@ -33,9 +33,9 @@
 
 I built this project to learn how game mechanics works as well as to further learn the JavaScript langugae. More than that, I think this project will look good on Portfolio or something.
 
-This project itself is a combination of two works: <a href="https://antiyoy.fandom.com/">Antiyoy</a> created by yiotro, and <a href="https://github.com/alcalyn/openhex">Openhex</a> created by alcalyn. My part is to make them know and be friend each other, with some spices and seasonings!
+This project itself is a combination of two works: <a href="https://github.com/yiotro/Antiyoy/">Antiyoy</a> created by yiotro, and <a href="https://github.com/alcalyn/openhex">Openhex</a> created by alcalyn. My part is to make them know and be friend each other, with some spices and seasonings!
 
-Full credits including images and tools used are mentioned in <a href="https://github.com/SnekNOTSnake/Vagus/src/components/Credits.jsx">Credits.jsx</a> file.
+Full credits including images and tools used are mentioned in <a href="https://github.com/SnekNOTSnake/Vagus/blob/main/src/components/Credits.jsx">Credits.jsx</a> file.
 
 ## 🗡️ Features
 
