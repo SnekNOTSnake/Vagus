@@ -33,6 +33,23 @@ describe('ArbiterTree', () => {
 			expect(world.getEntityAt(hex2).played).toBe(true)
 		})
 
+		it('Makes a bought unit played its turn after clearing a tree', () => {
+			const world = generateTestingWorld('constant-seed-5')
+			const arbiter = new Arbiter(world)
+			const hex1 = new Hex(1, 0, -1)
+			const hex2 = new Hex(2, -1, -1)
+			const tree1 = new Tree()
+			const kingdom = world.getKingdomAt(hex1)
+
+			world.setEntityAt(hex2, tree1)
+			arbiter.setCurrentPlayer(kingdom.player)
+			arbiter.buyUnitTowardsHex(hex2, kingdom, 1)
+
+			expect(world.getEntityAt(hex1)).toBeNull()
+			expect(world.getEntityAt(hex2)).toBeInstanceOf(Unit)
+			expect(world.getEntityAt(hex2).played).toBe(true)
+		})
+
 		it('Transforms capital to a tree on a 2-hex kingdom if the capital is the only hex', () => {
 			const world = generateTestingWorld('constant-seed-5')
 			const arbiter = new Arbiter(world)

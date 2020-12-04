@@ -444,10 +444,13 @@ export default class Arbiter {
 				from.setEntity(null)
 				fromEntity.setPlayed(true)
 			}
+			if (isBoughtUnit && lastHexEntity instanceof Tree) {
+				fromEntity.setPlayed(true)
+			}
 
 			undoCallbacks.push(() => {
+				to.entity.setPlayed(false)
 				if (!isBoughtUnit) {
-					to.entity.setPlayed(false)
 					from.setEntity(lastFromEntity)
 				}
 				if (lastHexEntity instanceof Tree)
